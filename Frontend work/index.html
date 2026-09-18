@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="AI CV Builder - Create professional ATS-friendly CVs with AI."
+    >
+
+    <meta
+        name="theme-color"
+        content="#0b0d12"
+    >
+
+    <title>AI CV Builder</title>
+
+
+    <!-- =====================================================
+         GOOGLE FONTS
+    ====================================================== -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    >
+
+
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="site-header">
+
+    <div class="header-container">
+
+
+        <!-- BRAND -->
+
+        <a
+            href="#"
+            class="brand"
+        >
+
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+            <span>
+                AI CV Builder
+            </span>
+
+        </a>
+
+
+
+        <!-- NAVIGATION -->
+
+        <nav class="main-nav">
+
+            <a href="#builder">
+                Builder
+            </a>
+
+            <a href="#preview">
+                Preview
+            </a>
+
+
+            <button
+                type="button"
+                class="header-button"
+                onclick="openTemplates()"
+            >
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                Templates
+
+            </button>
+
+
+            <button
+                type="button"
+                class="header-button primary"
+                onclick="downloadCV()"
+            >
+
+                <i class="fa-solid fa-download"></i>
+
+                Download PDF
+
+            </button>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main
+    class="page-container"
+    id="builder"
+>
+
+
+    <div class="builder-layout">
+
+
+        <!-- =====================================================
+             LEFT SIDE
+        ====================================================== -->
+
+        <div class="builder-content">
+
+
+            <!-- =================================================
+                 HERO
+            ================================================== -->
+
+            <section class="hero-section">
+
+
+                <span class="hero-badge">
+
+                    <i class="fa-solid fa-sparkles"></i>
+
+                    AI POWERED
+
+                </span>
+
+
+                <h1>
+                    Build Your Professional CV
+                </h1>
+
+
+                <p>
+                    Create a modern, professional and ATS-friendly
+                    CV with the help of AI.
+                </p>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PERSONAL INFORMATION
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+                    <h2>
+
+                        <i class="fa-solid fa-user"></i>
+
+                        Personal Information
+
+                    </h2>
+
+
+                    <p>
+                        Enter your basic personal and contact
+                        information.
+                    </p>
+
+                </div>
+
+
+
+                <div class="form-grid">
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="e.g. Owais Ahmed Sheikh"
+                            autocomplete="name"
+                        >
+
+                    </div>
+
+
+
+                    <!-- EMAIL -->
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            inputmode="email"
+                            spellcheck="false"
+                        >
+
+                    </div>
+
+
+
+                    <!-- PHONE -->
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            placeholder="03001234567"
+                            autocomplete="tel"
+                            inputmode="numeric"
+                            pattern="[0-9+() -]{7,20}"
+                            maxlength="20"
+                        >
+
+                    </div>
+
+
+
+                    <!-- DATE OF BIRTH -->
+
+                    <div class="form-group">
+
+                        <label for="dateOfBirth">
+                            Date of Birth
+                        </label>
+
+                        <input
+                            type="date"
+                            id="dateOfBirth"
+                            name="dateOfBirth"
+                            autocomplete="bday"
+                            max="2026-09-18"
+                        >
+
+                    </div>
+
+
+
+                    <!-- COUNTRY -->
+
+                    <div class="form-group">
+
+                        <label for="country">
+                            Country
+                        </label>
+
+                        <select
+                            id="country"
+                            name="country"
+                            autocomplete="country-name"
+                        >
+
+                            <option value="">
+                                Select Country
+                            </option>
+
+                            <option value="Pakistan">
+                                Pakistan
+                            </option>
+
+                            <option value="India">
+                                India
+                            </option>
+
+                            <option value="United Arab Emirates">
+                                United Arab Emirates
+                            </option>
+
+                            <option value="Saudi Arabia">
+                                Saudi Arabia
+                            </option>
+
+                            <option value="United Kingdom">
+                                United Kingdom
+                            </option>
+
+                            <option value="United States">
+                                United States
+                            </option>
+
+                            <option value="Canada">
+                                Canada
+                            </option>
+
+                            <option value="Australia">
+                                Australia
+                            </option>
+
+                            <option value="Germany">
+                                Germany
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- CITY -->
+
+                    <div class="form-group">
+
+                        <label for="city">
+                            City
+                        </label>
+
+                        <select
+                            id="city"
+                            name="city"
+                            autocomplete="address-level2"
+                            disabled
+                        >
+
+                            <option value="">
+                                Select country first
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- LOCATION -->
+
+                    <input
+                        type="hidden"
+                        id="location"
+                        name="location"
+                    >
+
+
+
+                    <!-- ADDRESS -->
+
+                    <div class="form-group full-width">
+
+                        <label for="address">
+                            Address
+                        </label>
+
+                        <input
+                            type="text"
+                            id="address"
+                            name="address"
+                            placeholder="Your address"
+                            autocomplete="street-address"
+                        >
+
+                    </div>
+
+
+
+                    <!-- LINKEDIN -->
+
+                    <div class="form-group">
+
+                        <label for="linkedin">
+                            LinkedIn
+                        </label>
+
+                        <input
+                            type="url"
+                            id="linkedin"
+                            name="linkedin"
+                            placeholder="https://linkedin.com/in/username"
+                            autocomplete="url"
+                            spellcheck="false"
+                        >
+
+                    </div>
+
+
+
+                    <!-- GITHUB -->
+
+                    <div class="form-group">
+
+                        <label for="github">
+                            GitHub
+                        </label>
+
+                        <input
+                            type="url"
+                            id="github"
+                            name="github"
+                            placeholder="https://github.com/username"
+                            autocomplete="url"
+                            spellcheck="false"
+                        >
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PROFILE PHOTO
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+                    <h2>
+
+                        <i class="fa-solid fa-camera"></i>
+
+                        Profile Photo
+
+                    </h2>
+
+
+                    <p>
+                        Add a professional profile photo to your CV.
+                    </p>
+
+                </div>
+
+
+
+                <div class="photo-upload-area">
+
+
+                    <div
+                        class="photo-preview"
+                        id="photoPreview"
+                    >
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+
+
+                    <div class="photo-upload-content">
+
+
+                        <label
+                            for="profilePhoto"
+                            class="upload-button"
+                        >
+
+                            <i class="fa-solid fa-upload"></i>
+
+                            Choose Photo
+
+                        </label>
+
+
+                        <input
+                            type="file"
+                            id="profilePhoto"
+                            name="profilePhoto"
+                            accept="image/*"
+                            hidden
+                        >
+
+
+                        <p>
+                            JPG, PNG or WEBP. Recommended square image.
+                        </p>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CAREER FIELD
+            ================================================== -->
+
+            <section
+                class="builder-section career-section"
+                id="careerSection"
+            >
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-briefcase"></i>
+
+                        Career Field
+
+                    </h2>
+
+
+                    <p>
+                        Select your career field and get relevant
+                        job role suggestions for your CV.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="career-field-box">
+
+
+                    <h3>
+                        Choose Your Career Field
+                    </h3>
+
+
+                    <p>
+                        Select the field that best matches your career.
+                    </p>
+
+
+
+                    <!-- CAREER FIELD -->
+
+                    <div class="form-group">
+
+
+                        <label for="careerField">
+                            Career Field
+                        </label>
+
+
+                        <select
+                            id="careerField"
+                            name="careerField"
+                        >
+
+                            <option value="">
+                                Select Career Field
+                            </option>
+
+
+                            <option value="Technology">
+                                Technology / IT
+                            </option>
+
+
+                            <option value="Healthcare">
+                                Healthcare
+                            </option>
+
+
+                            <option value="Engineering">
+                                Engineering
+                            </option>
+
+
+                            <option value="Business">
+                                Business
+                            </option>
+
+
+                            <option value="Finance">
+                                Finance
+                            </option>
+
+
+                            <option value="Marketing">
+                                Marketing
+                            </option>
+
+
+                            <option value="Education">
+                                Education
+                            </option>
+
+
+                            <option value="Design">
+                                Design
+                            </option>
+
+
+                            <option value="Legal">
+                                Legal
+                            </option>
+
+
+                            <option value="Science">
+                                Science
+                            </option>
+
+
+                            <option value="Hospitality">
+                                Hospitality
+                            </option>
+
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         RECOMMENDED ROLES
+                    ================================================== -->
+
+                    <div
+                        class="career-role-suggestions"
+                        id="careerRoleSuggestions"
+                    >
+
+
+                        <h4>
+
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                            Recommended Roles
+
+                        </h4>
+
+
+
+                        <div
+                            class="career-role-options"
+                            id="careerRoleOptions"
+                        >
+
+
+                            <div class="career-role-placeholder">
+
+                                Select a career field to see
+                                recommended job roles.
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         AI CAREER GUIDE
+                    ================================================== -->
+
+                    <div class="ai-career-guide">
+
+
+                        <div class="ai-career-guide-header">
+
+                            <i class="fa-solid fa-robot"></i>
+
+                            <span>
+                                AI Career Guide
+                            </span>
+
+                        </div>
+
+
+                        <div id="aiGuideContent">
+
+                            Select a career field to receive
+                            AI-powered career guidance.
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 JOB TITLE
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-id-badge"></i>
+
+                        Professional Title
+
+                    </h2>
+
+
+                    <p>
+                        Choose a suggested role or enter your own
+                        professional title.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+
+                        <label for="jobTitle">
+                            Job Title
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="jobTitle"
+                            name="jobTitle"
+                            placeholder="e.g. Frontend Developer"
+                            autocomplete="organization-title"
+                        >
+
+
+                    </div>
+
+
+
+                    <div
+                        class="form-group"
+                        style="justify-content: flex-end;"
+                    >
+
+
+                        <button
+                            type="button"
+                            class="suggest-role-button"
+                            onclick="suggestCareerRole()"
+                        >
+
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                            Suggest Role
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PROFESSIONAL SUMMARY
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-align-left"></i>
+
+                        Professional Summary
+
+                    </h2>
+
+
+                    <p>
+                        Write a short professional introduction.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="summary">
+                        Summary
+                    </label>
+
+
+                    <textarea
+                        id="summary"
+                        name="summary"
+                        rows="6"
+                        placeholder="Write your professional summary..."
+                    ></textarea>
+
+
+                    <button
+                        type="button"
+                        class="ai-button"
+                        onclick="generateSummary()"
+                    >
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                        Generate Summary with AI
+
+                    </button>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 WORK EXPERIENCE
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-building"></i>
+
+                        Work Experience
+
+                    </h2>
+
+
+                    <p>
+                        Add your professional work experience.
+                    </p>
+
+
+                </div>
+
+
+
+                <div id="experienceContainer">
+
+
+                    <div
+                        class="repeatable-item experience-item"
+                    >
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Job Title
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="experience-job-title"
+                                    placeholder="e.g. Frontend Developer"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Company
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="experience-company"
+                                    placeholder="Company Name"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Start Date
+                                </label>
+
+                                <input
+                                    type="month"
+                                    class="experience-start"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    End Date
+                                </label>
+
+                                <input
+                                    type="month"
+                                    class="experience-end"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group full-width">
+
+                                <label>
+                                    Description
+                                </label>
+
+
+                                <textarea
+                                    class="experience-description"
+                                    rows="5"
+                                    placeholder="Describe your responsibilities..."
+                                ></textarea>
+
+
+                                <button
+                                    type="button"
+                                    class="ai-button"
+                                    onclick="improveExperience(this)"
+                                >
+
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                                    Improve with AI
+
+                                </button>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="add-button"
+                    onclick="addExperience()"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Experience
+
+                </button>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 EDUCATION
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-graduation-cap"></i>
+
+                        Education
+
+                    </h2>
+
+
+                    <p>
+                        Add your academic qualifications.
+                    </p>
+
+
+                </div>
+
+
+
+                <div id="educationContainer">
+
+
+                    <div
+                        class="repeatable-item education-item"
+                    >
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Degree / Qualification
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="education-degree"
+                                    placeholder="e.g. Bachelor's in Computer Science"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Institution
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="education-institution"
+                                    placeholder="University / College"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Start Year
+                                </label>
+
+                                <input
+                                    type="number"
+                                    class="education-start"
+                                    placeholder="2022"
+                                    min="1950"
+                                    max="2100"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    End Year
+                                </label>
+
+                                <input
+                                    type="number"
+                                    class="education-end"
+                                    placeholder="2026"
+                                    min="1950"
+                                    max="2100"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group full-width">
+
+                                <label>
+                                    Details
+                                </label>
+
+                                <textarea
+                                    class="education-details"
+                                    rows="3"
+                                    placeholder="Add relevant details..."
+                                ></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="add-button"
+                    onclick="addEducation()"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Education
+
+                </button>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SKILLS
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-code"></i>
+
+                        Skills
+
+                    </h2>
+
+
+                    <p>
+                        Add skills relevant to your career.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="skills">
+                        Skills
+                    </label>
+
+
+                    <textarea
+                        id="skills"
+                        name="skills"
+                        rows="5"
+                        placeholder="HTML, CSS, JavaScript, React, Git..."
+                    ></textarea>
+
+
+                    <button
+                        type="button"
+                        class="ai-button"
+                        onclick="suggestSkills()"
+                    >
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                        Suggest Skills with AI
+
+                    </button>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PROJECTS
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-diagram-project"></i>
+
+                        Projects
+
+                    </h2>
+
+
+                    <p>
+                        Showcase your important projects.
+                    </p>
+
+
+                </div>
+
+
+
+                <div id="projectsContainer">
+
+
+                    <div
+                        class="repeatable-item project-item"
+                    >
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Project Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="project-name"
+                                    placeholder="e.g. AI CV Builder"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Technologies
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="project-technologies"
+                                    placeholder="HTML, CSS, JavaScript, Node.js"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group full-width">
+
+                                <label>
+                                    Project Description
+                                </label>
+
+
+                                <textarea
+                                    class="project-description"
+                                    rows="5"
+                                    placeholder="Describe your project..."
+                                ></textarea>
+
+
+                                <button
+                                    type="button"
+                                    class="ai-button"
+                                    onclick="improveProject(this)"
+                                >
+
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                                    Improve with AI
+
+                                </button>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="add-button"
+                    onclick="addProject()"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Project
+
+                </button>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CERTIFICATIONS
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-certificate"></i>
+
+                        Certifications
+
+                    </h2>
+
+
+                    <p>
+                        Add your professional certifications.
+                    </p>
+
+
+                </div>
+
+
+
+                <div id="certificationsContainer">
+
+
+                    <div
+                        class="repeatable-item certification-item"
+                    >
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Certification Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="certification-name"
+                                    placeholder="e.g. Web Development"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Issuing Organization
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="certification-issuer"
+                                    placeholder="Organization Name"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Year
+                                </label>
+
+                                <input
+                                    type="number"
+                                    class="certification-year"
+                                    placeholder="2026"
+                                    min="1950"
+                                    max="2100"
+                                >
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="add-button"
+                    onclick="addCertification()"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Certification
+
+                </button>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 LANGUAGES
+            ================================================== -->
+
+            <section class="builder-section">
+
+
+                <div class="section-heading">
+
+
+                    <h2>
+
+                        <i class="fa-solid fa-language"></i>
+
+                        Languages
+
+                    </h2>
+
+
+                    <p>
+                        Add languages you can communicate in.
+                    </p>
+
+
+                </div>
+
+
+
+                <div id="languagesContainer">
+
+
+                    <div
+                        class="repeatable-item language-item"
+                    >
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Language
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="language-name"
+                                    placeholder="e.g. English"
+                                >
+
+                            </div>
+
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Proficiency
+                                </label>
+
+
+                                <select class="language-level">
+
+                                    <option value="">
+                                        Select Level
+                                    </option>
+
+                                    <option value="Native">
+                                        Native
+                                    </option>
+
+                                    <option value="Fluent">
+                                        Fluent
+                                    </option>
+
+                                    <option value="Advanced">
+                                        Advanced
+                                    </option>
+
+                                    <option value="Intermediate">
+                                        Intermediate
+                                    </option>
+
+                                    <option value="Basic">
+                                        Basic
+                                    </option>
+
+                                </select>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="add-button"
+                    onclick="addLanguage()"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Language
+
+                </button>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FINAL ACTIONS
+            ================================================== -->
+
+            <section class="builder-actions">
+
+
+                <button
+                    type="button"
+                    class="clear-button"
+                    onclick="clearCV()"
+                >
+
+                    <i class="fa-solid fa-trash"></i>
+
+                    Clear CV
+
+                </button>
+
+
+
+                <button
+                    type="button"
+                    class="analyze-button"
+                    onclick="analyzeCV()"
+                >
+
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+
+                    Analyze CV with AI
+
+                </button>
+
+
+
+                <button
+                    type="button"
+                    class="download-button"
+                    onclick="downloadCV()"
+                >
+
+                    <i class="fa-solid fa-file-pdf"></i>
+
+                    Download CV
+
+                </button>
+
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- =====================================================
+             RIGHT SIDE - LIVE PREVIEW
+        ====================================================== -->
+
+        <aside
+            class="preview-panel"
+            id="preview"
+        >
+
+
+            <div class="preview-header">
+
+
+                <div>
+
+                    <span class="preview-label">
+                        LIVE PREVIEW
+                    </span>
+
+
+                    <h2>
+                        Your CV
+                    </h2>
+
+                </div>
+
+
+
+                <button
+                    type="button"
+                    class="preview-download"
+                    onclick="downloadCV()"
+                >
+
+                    <i class="fa-solid fa-download"></i>
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CV PAPER
+            ================================================== -->
+
+            <div
+                class="cv-preview template-1"
+                id="cvPreview"
+            >
+
+
+                <!-- CV HEADER -->
+
+                <div class="cv-header">
+
+
+                    <div class="cv-header-info">
+
+
+                        <h1 id="previewName">
+                            Your Name
+                        </h1>
+
+
+                        <h2 id="previewJobTitle">
+                            Professional Title
+                        </h2>
+
+
+
+                        <div class="cv-contact">
+
+
+                            <span id="previewEmail">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                email@example.com
+
+                            </span>
+
+
+
+                            <span id="previewPhone">
+
+                                <i class="fa-solid fa-phone"></i>
+
+                                +92 300 0000000
+
+                            </span>
+
+
+
+                            <span id="previewLocation">
+
+                                <i class="fa-solid fa-location-dot"></i>
+
+                                Pakistan
+
+                            </span>
+
+
+                        </div>
+
+
+
+                        <div class="cv-social">
+
+
+                            <span id="previewLinkedin">
+                                LinkedIn
+                            </span>
+
+
+                            <span id="previewGithub">
+                                GitHub
+                            </span>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- PHOTO -->
+
+                    <div class="cv-photo-wrapper">
+
+
+                        <div class="cv-photo">
+
+
+                            <img
+                                id="previewPhoto"
+                                src=""
+                                alt="Profile Photo"
+                            >
+
+
+                            <i
+                                id="defaultPhotoIcon"
+                                class="fa-solid fa-user"
+                            ></i>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- PROFILE -->
+
+                <div
+                    class="cv-section"
+                    id="previewSummarySection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-user"></i>
+
+                        PROFILE
+
+                    </h3>
+
+
+                    <p
+                        id="previewSummary"
+                        class="cv-summary"
+                    >
+                        Your professional summary will appear here.
+                    </p>
+
+
+                </div>
+
+
+
+                <!-- EXPERIENCE -->
+
+                <div
+                    class="cv-section"
+                    id="previewExperienceSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-briefcase"></i>
+
+                        EXPERIENCE
+
+                    </h3>
+
+
+                    <div
+                        id="previewExperience"
+                        class="cv-list"
+                    >
+
+
+                        <div class="preview-empty">
+                            Work experience will appear here.
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- EDUCATION -->
+
+                <div
+                    class="cv-section"
+                    id="previewEducationSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-graduation-cap"></i>
+
+                        EDUCATION
+
+                    </h3>
+
+
+                    <div
+                        id="previewEducation"
+                        class="cv-list"
+                    >
+
+
+                        <div class="preview-empty">
+                            Education will appear here.
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- SKILLS -->
+
+                <div
+                    class="cv-section"
+                    id="previewSkillsSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-code"></i>
+
+                        SKILLS
+
+                    </h3>
+
+
+                    <div
+                        id="previewSkills"
+                        class="cv-skills"
+                    >
+
+
+                        <span class="skill-placeholder">
+                            Skills will appear here.
+                        </span>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- PROJECTS -->
+
+                <div
+                    class="cv-section"
+                    id="previewProjectsSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-diagram-project"></i>
+
+                        PROJECTS
+
+                    </h3>
+
+
+                    <div
+                        id="previewProjects"
+                        class="cv-list"
+                    >
+
+
+                        <div class="preview-empty">
+                            Projects will appear here.
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- CERTIFICATIONS -->
+
+                <div
+                    class="cv-section"
+                    id="previewCertificationsSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-certificate"></i>
+
+                        CERTIFICATIONS
+
+                    </h3>
+
+
+                    <div
+                        id="previewCertifications"
+                        class="cv-list"
+                    >
+
+
+                        <div class="preview-empty">
+                            Certifications will appear here.
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- LANGUAGES -->
+
+                <div
+                    class="cv-section"
+                    id="previewLanguagesSection"
+                >
+
+
+                    <h3 class="cv-section-title">
+
+                        <i class="fa-solid fa-language"></i>
+
+                        LANGUAGES
+
+                    </h3>
+
+
+                    <div
+                        id="previewLanguages"
+                        class="cv-list"
+                    >
+
+
+                        <div class="preview-empty">
+                            Languages will appear here.
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </aside>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =========================================================
+     TEMPLATE MODAL
+========================================================= -->
+
+<div
+    class="template-modal"
+    id="templateModal"
+    style="display: none;"
+>
+
+
+    <div class="template-modal-box">
+
+
+        <div class="template-modal-header">
+
+
+            <div>
+
+                <h2>
+                    Choose CV Template
+                </h2>
+
+
+                <p>
+                    Select a professional design for your CV.
+                </p>
+
+            </div>
+
+
+
+            <button
+                type="button"
+                onclick="closeTemplates()"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+
+        </div>
+
+
+
+        <div class="template-grid">
+
+
+            <!-- TEMPLATE 1 -->
+
+            <button
+                type="button"
+                class="template-option"
+                onclick="changeTemplate(1)"
+            >
+
+                <div class="template-preview template-preview-1">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <strong>
+                    Professional
+                </strong>
+
+
+            </button>
+
+
+
+            <!-- TEMPLATE 2 -->
+
+            <button
+                type="button"
+                class="template-option"
+                onclick="changeTemplate(2)"
+            >
+
+                <div class="template-preview template-preview-2">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <strong>
+                    Modern
+                </strong>
+
+
+            </button>
+
+
+
+            <!-- TEMPLATE 3 -->
+
+            <button
+                type="button"
+                class="template-option"
+                onclick="changeTemplate(3)"
+            >
+
+                <div class="template-preview template-preview-3">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <strong>
+                    Elegant
+                </strong>
+
+
+            </button>
+
+
+
+            <!-- TEMPLATE 4 -->
+
+            <button
+                type="button"
+                class="template-option"
+                onclick="changeTemplate(4)"
+            >
+
+                <div class="template-preview template-preview-4">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <strong>
+                    Minimal
+                </strong>
+
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     AI ANALYSIS MODAL
+========================================================= -->
+
+<div
+    class="analysis-modal"
+    id="analysisModal"
+    style="display: none;"
+>
+
+
+    <div class="analysis-modal-box">
+
+
+        <div class="analysis-modal-header">
+
+
+            <div>
+
+                <span class="analysis-label">
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    AI ANALYSIS
+
+                </span>
+
+
+                <h2>
+                    CV Analysis
+                </h2>
+
+            </div>
+
+
+
+            <button
+                type="button"
+                onclick="closeAnalysis()"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+
+        </div>
+
+
+
+        <div
+            class="analysis-content"
+            id="analysisContent"
+        >
+
+            Analyzing your CV...
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div
+    class="toast"
+    id="toast"
+>
+
+
+    <i
+        class="fa-solid fa-circle-check"
+        id="toastIcon"
+    ></i>
+
+
+    <span id="toastMessage">
+        Success
+    </span>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="site-footer">
+
+
+    <div class="footer-container">
+
+
+        <!-- =================================================
+             FOOTER BRAND
+        ================================================== -->
+
+        <div class="footer-brand">
+
+
+            <a
+                href="#"
+                class="brand"
+            >
+
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                <span>
+                    AI CV Builder
+                </span>
+
+            </a>
+
+
+            <p>
+                Build a professional CV with intelligent
+                AI-powered tools.
+            </p>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             QUICK LINKS
+        ================================================== -->
+
+        <div class="footer-links">
+
+
+            <h3>
+                Quick Links
+            </h3>
+
+
+            <a href="#builder">
+                Builder
+            </a>
+
+
+            <a href="#preview">
+                Preview
+            </a>
+
+
+            <button
+                type="button"
+                onclick="openTemplates()"
+            >
+                Templates
+            </button>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             CONNECT WITH ME
+        ================================================== -->
+
+        <div class="footer-links">
+
+
+            <h3>
+                Connect With Me
+            </h3>
+
+
+
+            <!-- LINKEDIN -->
+
+            <a
+                href="https://www.linkedin.com/in/owais-ahmed-sheikh-723085352/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <i class="fa-brands fa-linkedin"></i>
+
+                LinkedIn
+
+            </a>
+
+
+
+            <!-- GITHUB -->
+
+            <a
+                href="https://github.com/Owais180406"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <i class="fa-brands fa-github"></i>
+
+                GitHub
+
+            </a>
+
+
+
+            <!-- INSTAGRAM -->
+
+            <a
+                href="https://www.instagram.com/owaisahmed_sheikh/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <i class="fa-brands fa-instagram"></i>
+
+                Instagram
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =================================================
+         FOOTER BOTTOM
+    ================================================== -->
+
+    <div class="footer-bottom">
+
+
+        <p>
+            © 2026 AI CV Builder. All rights reserved.
+        </p>
+
+
+        <p>
+            Built with AI &amp; Web Technologies.
+        </p>
+
+
+    </div>
+
+
+</footer>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>
