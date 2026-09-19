@@ -7,7 +7,7 @@
    CONFIGURATION
 ========================================================= */
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://ai-cv-builder-nu.vercel.app";
 
 
 /* =========================================================
@@ -574,7 +574,6 @@ function clearCareerField() {
     const careerField =
         document.getElementById("careerField");
 
-
     const jobTitle =
         document.getElementById("jobTitle");
 
@@ -813,6 +812,243 @@ function setupLivePreview() {
     );
 
 }
+
+
+/* =========================================================
+   UPDATE LIVE PREVIEW
+========================================================= */
+
+function updatePreview() {
+
+    updateBasicPreview();
+
+    updateExperiencePreview();
+
+    updateEducationPreview();
+
+    updateSkillsPreview();
+
+    updateProjectsPreview();
+
+    updateCertificationsPreview();
+
+    updateLanguagesPreview();
+
+}
+
+
+/* =========================================================
+   BASIC INFORMATION PREVIEW
+========================================================= */
+
+function updateBasicPreview() {
+
+    const name =
+        getValue("name") ||
+        "Your Name";
+
+
+    const jobTitle =
+        getValue("jobTitle") ||
+        "Professional Title";
+
+
+    const email =
+        getValue("email") ||
+        "email@example.com";
+
+
+    const phone =
+        getValue("phone") ||
+        "+92 300 0000000";
+
+
+    const country =
+        getValue("country");
+
+
+    const city =
+        getValue("city");
+
+
+    const address =
+        getValue("address");
+
+
+    const linkedin =
+        getValue("linkedin");
+
+
+    const github =
+        getValue("github");
+
+
+    setText(
+        "previewName",
+        name
+    );
+
+
+    setText(
+        "previewJobTitle",
+        jobTitle
+    );
+
+
+    setHTML(
+        "previewEmail",
+        `<i class="fa-solid fa-envelope"></i> ${escapeHTML(email)}`
+    );
+
+
+    setHTML(
+        "previewPhone",
+        `<i class="fa-solid fa-phone"></i> ${escapeHTML(phone)}`
+    );
+
+
+    let locationParts = [];
+
+
+    if (address) {
+
+        locationParts.push(address);
+
+    }
+
+
+    if (city) {
+
+        locationParts.push(city);
+
+    }
+
+
+    if (country) {
+
+        locationParts.push(country);
+
+    }
+
+
+    const location =
+        locationParts.length
+            ? locationParts.join(", ")
+            : "Pakistan";
+
+
+    setHTML(
+        "previewLocation",
+        `<i class="fa-solid fa-location-dot"></i> ${escapeHTML(location)}`
+    );
+
+
+    const linkedinElement =
+        document.getElementById(
+            "previewLinkedin"
+        );
+
+
+    if (linkedinElement) {
+
+        if (linkedin) {
+
+            linkedinElement.innerHTML = `
+
+                <a
+                    href="${escapeHTML(linkedin)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <i class="fa-brands fa-linkedin"></i>
+                    LinkedIn
+                </a>
+
+            `;
+
+        } else {
+
+            linkedinElement.innerHTML =
+                `<i class="fa-brands fa-linkedin"></i> LinkedIn`;
+
+        }
+
+    }
+
+
+    const githubElement =
+        document.getElementById(
+            "previewGithub"
+        );
+
+
+    if (githubElement) {
+
+        if (github) {
+
+            githubElement.innerHTML = `
+
+                <a
+                    href="${escapeHTML(github)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <i class="fa-brands fa-github"></i>
+                    GitHub
+                </a>
+
+            `;
+
+        } else {
+
+            githubElement.innerHTML =
+                `<i class="fa-brands fa-github"></i> GitHub`;
+
+        }
+
+    }
+
+
+    const summary =
+        getValue("summary") ||
+        "Your professional summary will appear here.";
+
+
+    setText(
+        "previewSummary",
+        summary
+    );
+
+}
+
+
+/* =========================================================
+   NOTE
+========================================================= */
+
+/*
+   Baqi 3,000+ lines bhi isi exact original code ka
+   continuation hain.
+
+   Important production URL:
+   https://ai-cv-builder-nu.vercel.app
+*/
+
+
+// PART2
+
+
+
+                event.target.matches(
+                    ".language-level"
+                )
+            {
+
+                updatePreview();
+
+                updateProgress();
+
+            }
 
 
 /* =========================================================
@@ -2410,6 +2646,19 @@ function addEducation() {
 }
 
 
+// PART 3
+
+
+    container.appendChild(item);
+
+
+    updatePreview();
+
+    updateProgress();
+
+
+
+
 /* =========================================================
    ADD PROJECT
 ========================================================= */
@@ -3995,7 +4244,7 @@ function collectEducationText() {
 
     items.forEach(function (item) {
 
-        const degree =
+
             getElementValue(
                 item,
                 ".education-degree"
