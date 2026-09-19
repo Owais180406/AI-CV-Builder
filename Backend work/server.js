@@ -1,6 +1,7 @@
 // ======================================================
 // AI CV BUILDER - BACKEND SERVER
 // Node.js + Express + OpenAI
+// Vercel Ready
 // ======================================================
 
 // ======================================================
@@ -12,13 +13,11 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-
 // ======================================================
 // 2. LOAD ENVIRONMENT VARIABLES
 // ======================================================
 
 dotenv.config();
-
 
 // ======================================================
 // 3. CREATE EXPRESS APP
@@ -28,23 +27,17 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-
 // ======================================================
-// 4. CHECK API KEY
+// 4. CHECK OPENAI API KEY
 // ======================================================
 
 if (!process.env.OPENAI_API_KEY) {
-    console.error("");
     console.error("======================================");
     console.error("❌ OPENAI_API_KEY IS MISSING");
     console.error("======================================");
-    console.error("");
-    console.error("Please add your OpenAI API key inside .env");
-    console.error("");
-
-    process.exit(1);
+    console.error("Please add OPENAI_API_KEY to your .env file.");
+    console.error("======================================");
 }
-
 
 // ======================================================
 // 5. CREATE OPENAI CLIENT
@@ -54,46 +47,61 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
-
 // ======================================================
 // 6. MIDDLEWARE
 // ======================================================
 
 // Allow frontend requests
-app.use(cors());
+app.use(
+    cors({
+        origin: true,
+        methods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"]
+    })
+);
 
-// Allow JSON data
+// Allow JSON requests
 app.use(
     express.json({
         limit: "2mb"
     })
 );
 
-
 // ======================================================
 // 7. HOME / SERVER TEST ROUTE
 // ======================================================
 
 app.get("/", (req, res) => {
-
-    res.json({
+    res.status(200).json({
         success: true,
-        message: "AI CV Builder Backend is running 🚀"
+        message: "AI CV Builder Backend is running 🚀",
+        status: "online"
     });
-
 });
 
+// ======================================================
+// 8. HEALTH CHECK ROUTE
+// ======================================================
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Backend is healthy",
+        status: "online"
+    });
+});
 
 // ======================================================
-// 8. AI HELPER FUNCTION
+// 9. AI HELPER FUNCTION
 // ======================================================
 
 async function askAI(prompt) {
-
     try {
+        if (!process.env.OPENAI_API_KEY) {
+            throw new Error("OPENAI_API_KEY is not configured.");
+        }
 
         const response = await openai.responses.create({
-
             model: "gpt-5.6-luna",
 
             instructions:
@@ -103,33 +111,30 @@ async function askAI(prompt) {
                 "skills, numbers or responsibilities.",
 
             input: prompt
-
         });
 
+        if (!response || !response.output_text) {
+            throw new Error("OpenAI returned an empty response.");
+        }
+
         return response.output_text;
-
     } catch (error) {
-
-        console.error("");
         console.error("======================================");
         console.error("❌ OPENAI API ERROR");
         console.error("======================================");
         console.error(error);
-        console.error("");
+        console.error("======================================");
 
         throw error;
     }
 }
 
-
 // ======================================================
-// 9. GENERATE CV SUMMARY
+// 10. GENERATE CV SUMMARY
 // ======================================================
 
 app.post("/api/generate-summary", async (req, res) => {
-
     try {
-
         const {
             name,
             jobTitle,
@@ -137,7 +142,6 @@ app.post("/api/generate-summary", async (req, res) => {
             experience,
             education
         } = req.body;
-
 
         const prompt = `
 Create a professional ATS-friendly CV summary.
@@ -157,7 +161,6 @@ ${experience || "Not provided"}
 Education:
 ${education || "Not provided"}
 
-
 Requirements:
 
 - Write 3 to 5 professional sentences.
@@ -173,50 +176,34 @@ Requirements:
 - Return ONLY the summary.
 `;
 
-
         const summary = await askAI(prompt);
 
-
-        res.json({
-
+        res.status(200).json({
             success: true,
-
             summary: summary.trim()
-
         });
-
     } catch (error) {
-
-        console.error(error);
+        console.error("Generate Summary Error:", error);
 
         res.status(500).json({
-
             success: false,
-
             message:
                 error.message ||
                 "Failed to generate CV summary."
-
         });
-
     }
-
 });
 
-
 // ======================================================
-// 10. SUGGEST SKILLS
+// 11. SUGGEST SKILLS
 // ======================================================
 
 app.post("/api/suggest-skills", async (req, res) => {
-
     try {
-
         const {
             jobTitle,
             existingSkills
         } = req.body;
-
 
         const prompt = `
 Suggest professional skills for this CV.
@@ -226,7 +213,6 @@ ${jobTitle || "Not provided"}
 
 Existing Skills:
 ${existingSkills || "None"}
-
 
 Requirements:
 
@@ -251,30 +237,20 @@ Example:
 ]
 `;
 
-
         const result = await askAI(prompt);
 
-
-        // Remove markdown code fences if AI adds them
+        // Remove markdown code fences
         const cleanedResult = result
-            .replace(/```json/g, "")
+            .replace(/```json/gi, "")
             .replace(/```/g, "")
             .trim();
 
-
         let skills;
 
-
         try {
-
             skills = JSON.parse(cleanedResult);
-
         } catch (parseError) {
-
-            console.error(
-                "❌ AI returned invalid JSON:"
-            );
-
+            console.error("❌ Invalid AI JSON:");
             console.error(cleanedResult);
 
             throw new Error(
@@ -282,58 +258,45 @@ Example:
             );
         }
 
-
-        // Make sure result is an array
         if (!Array.isArray(skills)) {
-
             throw new Error(
                 "AI skills response is not an array."
             );
-
         }
 
+        // Make sure every skill is a string
+        skills = skills
+            .filter(skill => typeof skill === "string")
+            .map(skill => skill.trim())
+            .filter(Boolean);
 
-        res.json({
-
+        res.status(200).json({
             success: true,
-
-            skills: skills
-
+            skills
         });
-
     } catch (error) {
-
-        console.error(error);
+        console.error("Suggest Skills Error:", error);
 
         res.status(500).json({
-
             success: false,
-
             message:
                 error.message ||
                 "Failed to generate skills."
-
         });
-
     }
-
 });
 
-
 // ======================================================
-// 11. IMPROVE WORK EXPERIENCE
+// 12. IMPROVE WORK EXPERIENCE
 // ======================================================
 
 app.post("/api/improve-experience", async (req, res) => {
-
     try {
-
         const {
             jobTitle,
             company,
             description
         } = req.body;
-
 
         const prompt = `
 Improve this work experience for a professional CV.
@@ -346,7 +309,6 @@ ${company || "Not provided"}
 
 Original Description:
 ${description || "Not provided"}
-
 
 Requirements:
 
@@ -361,53 +323,35 @@ Requirements:
 - Return ONLY the bullet points.
 `;
 
+        const improvedExperience = await askAI(prompt);
 
-        const improvedExperience =
-            await askAI(prompt);
-
-
-        res.json({
-
+        res.status(200).json({
             success: true,
-
-            experience:
-                improvedExperience.trim()
-
+            experience: improvedExperience.trim()
         });
-
     } catch (error) {
-
-        console.error(error);
+        console.error("Improve Experience Error:", error);
 
         res.status(500).json({
-
             success: false,
-
             message:
                 error.message ||
                 "Failed to improve experience."
-
         });
-
     }
-
 });
 
-
 // ======================================================
-// 12. IMPROVE PROJECT DESCRIPTION
+// 13. IMPROVE PROJECT DESCRIPTION
 // ======================================================
 
 app.post("/api/improve-project", async (req, res) => {
-
     try {
-
         const {
             projectName,
             technologies,
             description
         } = req.body;
-
 
         const prompt = `
 Improve this project description for a professional CV.
@@ -420,7 +364,6 @@ ${technologies || "Not provided"}
 
 Current Description:
 ${description || "Not provided"}
-
 
 Requirements:
 
@@ -435,47 +378,30 @@ Requirements:
 - Return ONLY the improved description.
 `;
 
+        const improved = await askAI(prompt);
 
-        const improved =
-            await askAI(prompt);
-
-
-        res.json({
-
+        res.status(200).json({
             success: true,
-
-            description:
-                improved.trim()
-
+            description: improved.trim()
         });
-
     } catch (error) {
-
-        console.error(error);
+        console.error("Improve Project Error:", error);
 
         res.status(500).json({
-
             success: false,
-
             message:
                 error.message ||
                 "Failed to improve project."
-
         });
-
     }
-
 });
 
-
 // ======================================================
-// 13. ANALYZE COMPLETE CV
+// 14. ANALYZE COMPLETE CV
 // ======================================================
 
 app.post("/api/analyze-cv", async (req, res) => {
-
     try {
-
         const {
             name,
             jobTitle,
@@ -486,7 +412,6 @@ app.post("/api/analyze-cv", async (req, res) => {
             projects,
             certifications
         } = req.body;
-
 
         const prompt = `
 Analyze this CV as a professional ATS resume consultant.
@@ -515,7 +440,6 @@ ${projects || "Not provided"}
 Certifications:
 ${certifications || "Not provided"}
 
-
 Provide the analysis using these sections:
 
 1. CV Overview
@@ -530,7 +454,6 @@ Provide the analysis using these sections:
 
 6. Professional Recommendations
 
-
 Important:
 
 - Do not invent facts.
@@ -542,128 +465,90 @@ Important:
 - Clearly explain what can be improved.
 `;
 
+        const analysis = await askAI(prompt);
 
-        const analysis =
-            await askAI(prompt);
-
-
-        res.json({
-
+        res.status(200).json({
             success: true,
-
-            analysis:
-                analysis.trim()
-
+            analysis: analysis.trim()
         });
-
     } catch (error) {
-
-        console.error(error);
+        console.error("Analyze CV Error:", error);
 
         res.status(500).json({
-
             success: false,
-
             message:
                 error.message ||
                 "Failed to analyze CV."
-
         });
-
     }
-
 });
 
-
 // ======================================================
-// 14. 404 ERROR HANDLER
+// 15. 404 ERROR HANDLER
 // ======================================================
 
 app.use((req, res) => {
-
     res.status(404).json({
-
         success: false,
-
-        message: "API route not found."
-
+        message: "API route not found.",
+        path: req.originalUrl
     });
-
 });
 
-
 // ======================================================
-// 15. GLOBAL ERROR HANDLER
+// 16. GLOBAL ERROR HANDLER
 // ======================================================
 
 app.use((err, req, res, next) => {
-
-    console.error(
-        "❌ Server Error:",
-        err
-    );
-
+    console.error("❌ Server Error:", err);
 
     res.status(500).json({
-
         success: false,
-
-        message:
-            "Internal server error."
-
+        message: "Internal server error."
     });
-
 });
 
+// ======================================================
+// 17. LOCAL SERVER
+// ======================================================
+//
+// IMPORTANT:
+// Vercel ke liye app.listen() use nahi karna.
+// Express app ko export karna hai.
+//
+// Local testing ke liye:
+// node server.js
+//
+// Agar local server chalana ho to neeche wala block
+// uncomment kar sakte ho.
+//
+// ======================================================
+
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log("");
+        console.log("======================================");
+        console.log("🚀 AI CV BUILDER BACKEND");
+        console.log("======================================");
+        console.log("");
+        console.log(`✅ Server running on:`);
+        console.log(`http://localhost:${PORT}`);
+        console.log("");
+        console.log("Available routes:");
+        console.log("GET  /");
+        console.log("GET  /api/health");
+        console.log("POST /api/generate-summary");
+        console.log("POST /api/suggest-skills");
+        console.log("POST /api/improve-experience");
+        console.log("POST /api/improve-project");
+        console.log("POST /api/analyze-cv");
+        console.log("");
+        console.log("======================================");
+    });
+}
 
 // ======================================================
-// 16. START SERVER
+// 18. EXPORT APP FOR VERCEL
 // ======================================================
 
-app.listen(PORT, () => {
-
-    console.log("");
-
-    console.log("======================================");
-    console.log("🚀 AI CV BUILDER BACKEND");
-    console.log("======================================");
-
-    console.log("");
-
-    console.log("✅ Server running on:");
-
-    console.log(
-        `http://localhost:${PORT}`
-    );
-
-    console.log("");
-
-    console.log("Available AI routes:");
-
-    console.log(
-        "POST /api/generate-summary"
-    );
-
-    console.log(
-        "POST /api/suggest-skills"
-    );
-
-    console.log(
-        "POST /api/improve-experience"
-    );
-
-    console.log(
-        "POST /api/improve-project"
-    );
-
-    console.log(
-        "POST /api/analyze-cv"
-    );
-
-    console.log("");
-
-    console.log("======================================");
-
-    console.log("");
-
-});
+module.exports = app;
