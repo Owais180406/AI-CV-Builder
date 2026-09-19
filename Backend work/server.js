@@ -1,6 +1,5 @@
-
 // ======================================================
-// AI CV BUILDER - BACKEND SERVER
+// AI CV BUILDER - BACKEND SERVER (FIXED)
 // Node.js + Express + OpenAI
 // Vercel Ready
 // ======================================================
@@ -10,46 +9,84 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-// ======================================================
-// 1. LOAD ENVIRONMENT VARIABLES
-// ======================================================
-
 dotenv.config();
 
-// ======================================================
-// 2. CREATE EXPRESS APP
-// ======================================================
-
 const app = express();
-
-// ======================================================
-// 3. OPENAI CLIENT
-// ======================================================
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
 // ======================================================
-// 4. MIDDLEWARE
+// MIDDLEWARE
 // ======================================================
 
-app.use(
-    cors({
-        origin: true,
-        methods: ["GET", "POST", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"]
-    })
-);
+app.use(cors({
+    origin: true,                       // development ke liye theek hai
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-app.use(
-    express.json({
-        limit: "2mb"
-    })
-);
+app.use(express.json({ limit: "2mb" }));
 
 // ======================================================
-// 5. HOME ROUTE
+// HELPERS
+// ======================================================
+
+function safeString(value) {
+    if (value === null || value === undefined) return "Not provided";
+    if (typeof value === "string") return value.trim() || "Not provided";
+    if (Array.isArray(value)) {
+        if (value.length === 0) return "Not provided";
+        return JSON.stringify(value, null, 2);
+    }
+    if (typeof value === "object") return JSON.stringify(value, null, 2);
+    return String(value);
+}
+
+async function askAI(prompt) {
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error("OPENAI_API_KEY is not configured on Vercel.");
+    }
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",          // cheap + fast + good quality
+            messages: [
+                {
+                    role: "system",
+                    content:
+                        "You are a professional CV and resume writing assistant. " +
+                        "Always keep information truthful. " +
+                        "Never invent experience, education, certifications, " +
+                        "achievements, skills, numbers or responsibilities. " +
+                        "Return clean text only (no markdown headings unless asked)."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            temperature: 0.4,
+            max_tokens: 1200
+        });
+
+        const text = response.choices?.[0]?.message?.content?.trim();
+
+        if (!text) {
+            throw new Error("OpenAI returned an empty response.");
+        }
+
+        return text;
+
+    } catch (error) {
+        console.error("OPENAI API ERROR:", error);
+        throw error;
+    }
+}
+
+// ======================================================
+// ROUTES
 // ======================================================
 
 app.get("/", (req, res) => {
@@ -60,10 +97,6 @@ app.get("/", (req, res) => {
     });
 });
 
-// ======================================================
-// 6. HEALTH CHECK
-// ======================================================
-
 app.get("/api/health", (req, res) => {
     res.status(200).json({
         success: true,
@@ -71,10 +104,6 @@ app.get("/api/health", (req, res) => {
         status: "online"
     });
 });
-
-// ======================================================
-// 7. CHECK API KEY
-// ======================================================
 
 app.get("/api/check-key", (req, res) => {
     res.status(200).json({
@@ -84,103 +113,49 @@ app.get("/api/check-key", (req, res) => {
 });
 
 // ======================================================
-// 8. AI HELPER FUNCTION
-// ======================================================
-
-async function askAI(prompt) {
-
-    if (!process.env.OPENAI_API_KEY) {
-        throw new Error("OPENAI_API_KEY is not configured on Vercel.");
-    }
-
-    try {
-
-        const response = await openai.responses.create({
-            model: "gpt-5.6-luna",
-
-            instructions:
-                "You are a professional CV and resume writing assistant. " +
-                "Always keep information truthful. " +
-                "Never invent experience, education, certifications, " +
-                "achievements, skills, numbers or responsibilities.",
-
-            input: prompt
-        });
-
-        if (!response || !response.output_text) {
-            throw new Error("OpenAI returned an empty response.");
-        }
-
-        return response.output_text;
-
-    } catch (error) {
-
-        console.error("OPENAI API ERROR:", error);
-
-        throw error;
-    }
-}
-
-// ======================================================
-// 9. GENERATE CV SUMMARY
+// 1. GENERATE SUMMARY
 // ======================================================
 
 app.post("/api/generate-summary", async (req, res) => {
-
     try {
-
-        const {
-            name,
-            jobTitle,
-            skills,
-            experience,
-            education
-        } = req.body;
+        // Frontend both "role" and "jobTitle" bhej sakta hai
+        const name = req.body.name;
+        const jobTitle = req.body.jobTitle || req.body.role;
+        const skills = req.body.skills;
+        const experience = req.body.experience;
+        const education = req.body.education;
+        const projects = req.body.projects;
 
         const prompt = `
 Create a professional ATS-friendly CV summary.
 
-Candidate Name:
-${name || "Not provided"}
-
-Job Title:
-${jobTitle || "Not provided"}
-
-Skills:
-${skills || "Not provided"}
-
-Experience:
-${experience || "Not provided"}
-
-Education:
-${education || "Not provided"}
+Candidate Name: ${safeString(name)}
+Job Title: ${safeString(jobTitle)}
+Skills: ${safeString(skills)}
+Experience: ${safeString(experience)}
+Education: ${safeString(education)}
+Projects: ${safeString(projects)}
 
 Requirements:
-
 - Write 3 to 5 professional sentences.
 - Make it suitable for a modern CV.
 - Make it ATS-friendly.
 - Highlight relevant skills.
 - Keep information truthful.
-- Do not invent experience.
-- Do not invent achievements.
-- Do not invent qualifications.
-- Do not invent certifications.
+- Do not invent experience, achievements or qualifications.
 - Do not use a heading.
-- Return ONLY the summary.
+- Return ONLY the summary text.
 `;
 
         const summary = await askAI(prompt);
 
         res.status(200).json({
             success: true,
-            summary: summary.trim()
+            summary: summary
         });
 
     } catch (error) {
-
         console.error("Generate Summary Error:", error);
-
         res.status(500).json({
             success: false,
             message: error.message || "Failed to generate CV summary."
@@ -189,79 +164,54 @@ Requirements:
 });
 
 // ======================================================
-// 10. SUGGEST SKILLS
+// 2. SUGGEST SKILLS
 // ======================================================
 
 app.post("/api/suggest-skills", async (req, res) => {
-
     try {
-
-        const {
-            jobTitle,
-            existingSkills
-        } = req.body;
+        const jobTitle = req.body.jobTitle || req.body.role;
+        const existingSkills = req.body.existingSkills || req.body.currentSkills || req.body.skills;
 
         const prompt = `
 Suggest professional skills for this CV.
 
-Job Title:
-${jobTitle || "Not provided"}
-
-Existing Skills:
-${existingSkills || "None"}
+Job Title: ${safeString(jobTitle)}
+Existing Skills: ${safeString(existingSkills)}
 
 Requirements:
-
 - Suggest 8 to 12 relevant professional skills.
 - Do not repeat existing skills.
 - Skills must be realistic for the job.
-- Do not invent certifications.
-- Do not invent experience.
-- Return ONLY valid JSON.
-- The JSON must be an array of strings.
+- Do not invent certifications or experience.
+- Return ONLY valid JSON array of strings.
 - Do not use markdown.
 - Do not add explanations.
 
 Example:
-
-[
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "Git",
-    "Responsive Design"
-]
+["HTML", "CSS", "JavaScript", "Git", "Responsive Design"]
 `;
 
         const result = await askAI(prompt);
 
-        const cleanedResult = result
+        const cleaned = result
             .replace(/```json/gi, "")
             .replace(/```/g, "")
             .trim();
 
         let skills;
-
         try {
-            skills = JSON.parse(cleanedResult);
-        } catch (parseError) {
-
-            console.error("Invalid AI JSON:", cleanedResult);
-
-            throw new Error(
-                "AI returned invalid skills format."
-            );
+            skills = JSON.parse(cleaned);
+        } catch {
+            throw new Error("AI returned invalid skills format.");
         }
 
         if (!Array.isArray(skills)) {
-            throw new Error(
-                "AI skills response is not an array."
-            );
+            throw new Error("AI skills response is not an array.");
         }
 
         skills = skills
-            .filter(skill => typeof skill === "string")
-            .map(skill => skill.trim())
+            .filter(s => typeof s === "string")
+            .map(s => s.trim())
             .filter(Boolean);
 
         res.status(200).json({
@@ -270,9 +220,7 @@ Example:
         });
 
     } catch (error) {
-
         console.error("Suggest Skills Error:", error);
-
         res.status(500).json({
             success: false,
             message: error.message || "Failed to generate skills."
@@ -281,55 +229,39 @@ Example:
 });
 
 // ======================================================
-// 11. IMPROVE WORK EXPERIENCE
+// 3. IMPROVE EXPERIENCE
 // ======================================================
 
 app.post("/api/improve-experience", async (req, res) => {
-
     try {
-
-        const {
-            jobTitle,
-            company,
-            description
-        } = req.body;
+        const { jobTitle, company, description } = req.body;
 
         const prompt = `
 Improve this work experience for a professional CV.
 
-Job Title:
-${jobTitle || "Not provided"}
-
-Company:
-${company || "Not provided"}
-
-Original Description:
-${description || "Not provided"}
+Job Title: ${safeString(jobTitle)}
+Company: ${safeString(company)}
+Original Description: ${safeString(description)}
 
 Requirements:
-
-- Make it professional.
-- Make it ATS-friendly.
+- Make it professional and ATS-friendly.
 - Use strong professional language.
 - Keep the candidate's original facts.
-- Do not invent achievements.
-- Do not invent numbers.
-- Do not invent responsibilities.
+- Do not invent achievements or numbers.
 - Create 3 to 5 concise bullet points.
-- Return ONLY the bullet points.
+- Return ONLY the bullet points (each starting with • or -).
 `;
 
-        const improvedExperience = await askAI(prompt);
+        const improved = await askAI(prompt);
 
         res.status(200).json({
             success: true,
-            experience: improvedExperience.trim()
+            experience: improved,               // frontend dono names accept karta hai
+            improvedExperience: improved
         });
 
     } catch (error) {
-
         console.error("Improve Experience Error:", error);
-
         res.status(500).json({
             success: false,
             message: error.message || "Failed to improve experience."
@@ -338,40 +270,28 @@ Requirements:
 });
 
 // ======================================================
-// 12. IMPROVE PROJECT
+// 4. IMPROVE PROJECT
 // ======================================================
 
 app.post("/api/improve-project", async (req, res) => {
-
     try {
-
-        const {
-            projectName,
-            technologies,
-            description
-        } = req.body;
+        // Frontend "name" bhejta hai, backend "projectName" bhi accept kare
+        const projectName = req.body.projectName || req.body.name;
+        const technologies = req.body.technologies;
+        const description = req.body.description;
 
         const prompt = `
 Improve this project description for a professional CV.
 
-Project Name:
-${projectName || "Not provided"}
-
-Technologies:
-${technologies || "Not provided"}
-
-Current Description:
-${description || "Not provided"}
+Project Name: ${safeString(projectName)}
+Technologies: ${safeString(technologies)}
+Current Description: ${safeString(description)}
 
 Requirements:
-
-- Make it professional.
-- Make it ATS-friendly.
+- Make it professional and ATS-friendly.
 - Mention technologies naturally.
 - Keep the information truthful.
-- Do not invent features.
-- Do not invent achievements.
-- Do not invent numbers.
+- Do not invent features or achievements.
 - Write 2 to 4 concise bullet points.
 - Return ONLY the improved description.
 `;
@@ -380,13 +300,13 @@ Requirements:
 
         res.status(200).json({
             success: true,
-            description: improved.trim()
+            description: improved,
+            improvedProject: improved,          // frontend yeh bhi dhundta hai
+            project: improved
         });
 
     } catch (error) {
-
         console.error("Improve Project Error:", error);
-
         res.status(500).json({
             success: false,
             message: error.message || "Failed to improve project."
@@ -395,50 +315,31 @@ Requirements:
 });
 
 // ======================================================
-// 13. ANALYZE COMPLETE CV
+// 5. ANALYZE CV
 // ======================================================
 
 app.post("/api/analyze-cv", async (req, res) => {
-
     try {
-
-        const {
-            name,
-            jobTitle,
-            summary,
-            skills,
-            experience,
-            education,
-            projects,
-            certifications
-        } = req.body;
+        const name = req.body.name;
+        const jobTitle = req.body.jobTitle || req.body.role;
+        const summary = req.body.summary;
+        const skills = req.body.skills;
+        const experience = req.body.experience;
+        const education = req.body.education;
+        const projects = req.body.projects;
+        const certifications = req.body.certifications;
 
         const prompt = `
 Analyze this CV as a professional ATS resume consultant.
 
-Candidate Name:
-${name || "Not provided"}
-
-Job Title:
-${jobTitle || "Not provided"}
-
-Summary:
-${summary || "Not provided"}
-
-Skills:
-${skills || "Not provided"}
-
-Experience:
-${experience || "Not provided"}
-
-Education:
-${education || "Not provided"}
-
-Projects:
-${projects || "Not provided"}
-
-Certifications:
-${certifications || "Not provided"}
+Candidate Name: ${safeString(name)}
+Job Title: ${safeString(jobTitle)}
+Summary: ${safeString(summary)}
+Skills: ${safeString(skills)}
+Experience: ${safeString(experience)}
+Education: ${safeString(education)}
+Projects: ${safeString(projects)}
+Certifications: ${safeString(certifications)}
 
 Provide the analysis using these sections:
 
@@ -450,11 +351,8 @@ Provide the analysis using these sections:
 6. Professional Recommendations
 
 Important:
-
 - Do not invent facts.
 - Do not claim the candidate has experience they did not provide.
-- Do not invent qualifications.
-- Do not invent achievements.
 - Give practical suggestions.
 - Keep the analysis professional.
 `;
@@ -463,13 +361,11 @@ Important:
 
         res.status(200).json({
             success: true,
-            analysis: analysis.trim()
+            analysis
         });
 
     } catch (error) {
-
         console.error("Analyze CV Error:", error);
-
         res.status(500).json({
             success: false,
             message: error.message || "Failed to analyze CV."
@@ -478,40 +374,29 @@ Important:
 });
 
 // ======================================================
-// 14. 404 HANDLER
+// 404
 // ======================================================
 
 app.use((req, res) => {
-
     res.status(404).json({
         success: false,
         message: "API route not found.",
         path: req.originalUrl
     });
-
 });
 
 // ======================================================
-// 15. LOCAL SERVER
+// LOCAL + VERCEL
 // ======================================================
 
 if (require.main === module) {
-
     const PORT = process.env.PORT || 5000;
-
     app.listen(PORT, () => {
-
         console.log("======================================");
-        console.log("🚀 AI CV BUILDER BACKEND");
-        console.log("======================================");
+        console.log("🚀 AI CV BUILDER BACKEND (FIXED)");
         console.log(`Server running on http://localhost:${PORT}`);
-
+        console.log("======================================");
     });
-
 }
-
-// ======================================================
-// 16. EXPORT FOR VERCEL
-// ======================================================
 
 module.exports = app;
