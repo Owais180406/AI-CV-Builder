@@ -1,11 +1,8 @@
+
 // ======================================================
 // AI CV BUILDER - BACKEND SERVER
 // Node.js + Express + OpenAI
 // Vercel Ready
-// ======================================================
-
-// ======================================================
-// 1. IMPORT PACKAGES
 // ======================================================
 
 const express = require("express");
@@ -14,33 +11,19 @@ const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
 // ======================================================
-// 2. LOAD ENVIRONMENT VARIABLES
+// 1. LOAD ENVIRONMENT VARIABLES
 // ======================================================
 
 dotenv.config();
 
 // ======================================================
-// 3. CREATE EXPRESS APP
+// 2. CREATE EXPRESS APP
 // ======================================================
 
 const app = express();
 
-const PORT = process.env.PORT || 5000;
-
 // ======================================================
-// 4. CHECK OPENAI API KEY
-// ======================================================
-
-if (!process.env.OPENAI_API_KEY) {
-    console.error("======================================");
-    console.error("❌ OPENAI_API_KEY IS MISSING");
-    console.error("======================================");
-    console.error("Please add OPENAI_API_KEY to your .env file.");
-    console.error("======================================");
-}
-
-// ======================================================
-// 5. CREATE OPENAI CLIENT
+// 3. OPENAI CLIENT
 // ======================================================
 
 const openai = new OpenAI({
@@ -48,10 +31,9 @@ const openai = new OpenAI({
 });
 
 // ======================================================
-// 6. MIDDLEWARE
+// 4. MIDDLEWARE
 // ======================================================
 
-// Allow frontend requests
 app.use(
     cors({
         origin: true,
@@ -60,7 +42,6 @@ app.use(
     })
 );
 
-// Allow JSON requests
 app.use(
     express.json({
         limit: "2mb"
@@ -68,7 +49,7 @@ app.use(
 );
 
 // ======================================================
-// 7. HOME / SERVER TEST ROUTE
+// 5. HOME ROUTE
 // ======================================================
 
 app.get("/", (req, res) => {
@@ -80,7 +61,7 @@ app.get("/", (req, res) => {
 });
 
 // ======================================================
-// 8. HEALTH CHECK ROUTE
+// 6. HEALTH CHECK
 // ======================================================
 
 app.get("/api/health", (req, res) => {
@@ -92,14 +73,27 @@ app.get("/api/health", (req, res) => {
 });
 
 // ======================================================
-// 9. AI HELPER FUNCTION
+// 7. CHECK API KEY
+// ======================================================
+
+app.get("/api/check-key", (req, res) => {
+    res.status(200).json({
+        success: true,
+        configured: Boolean(process.env.OPENAI_API_KEY)
+    });
+});
+
+// ======================================================
+// 8. AI HELPER FUNCTION
 // ======================================================
 
 async function askAI(prompt) {
+
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error("OPENAI_API_KEY is not configured on Vercel.");
+    }
+
     try {
-        if (!process.env.OPENAI_API_KEY) {
-            throw new Error("OPENAI_API_KEY is not configured.");
-        }
 
         const response = await openai.responses.create({
             model: "gpt-5.6-luna",
@@ -107,8 +101,8 @@ async function askAI(prompt) {
             instructions:
                 "You are a professional CV and resume writing assistant. " +
                 "Always keep information truthful. " +
-                "Never invent experience, education, certifications, achievements, " +
-                "skills, numbers or responsibilities.",
+                "Never invent experience, education, certifications, " +
+                "achievements, skills, numbers or responsibilities.",
 
             input: prompt
         });
@@ -118,23 +112,23 @@ async function askAI(prompt) {
         }
 
         return response.output_text;
+
     } catch (error) {
-        console.error("======================================");
-        console.error("❌ OPENAI API ERROR");
-        console.error("======================================");
-        console.error(error);
-        console.error("======================================");
+
+        console.error("OPENAI API ERROR:", error);
 
         throw error;
     }
 }
 
 // ======================================================
-// 10. GENERATE CV SUMMARY
+// 9. GENERATE CV SUMMARY
 // ======================================================
 
 app.post("/api/generate-summary", async (req, res) => {
+
     try {
+
         const {
             name,
             jobTitle,
@@ -182,24 +176,26 @@ Requirements:
             success: true,
             summary: summary.trim()
         });
+
     } catch (error) {
+
         console.error("Generate Summary Error:", error);
 
         res.status(500).json({
             success: false,
-            message:
-                error.message ||
-                "Failed to generate CV summary."
+            message: error.message || "Failed to generate CV summary."
         });
     }
 });
 
 // ======================================================
-// 11. SUGGEST SKILLS
+// 10. SUGGEST SKILLS
 // ======================================================
 
 app.post("/api/suggest-skills", async (req, res) => {
+
     try {
+
         const {
             jobTitle,
             existingSkills
@@ -239,7 +235,6 @@ Example:
 
         const result = await askAI(prompt);
 
-        // Remove markdown code fences
         const cleanedResult = result
             .replace(/```json/gi, "")
             .replace(/```/g, "")
@@ -250,8 +245,8 @@ Example:
         try {
             skills = JSON.parse(cleanedResult);
         } catch (parseError) {
-            console.error("❌ Invalid AI JSON:");
-            console.error(cleanedResult);
+
+            console.error("Invalid AI JSON:", cleanedResult);
 
             throw new Error(
                 "AI returned invalid skills format."
@@ -264,7 +259,6 @@ Example:
             );
         }
 
-        // Make sure every skill is a string
         skills = skills
             .filter(skill => typeof skill === "string")
             .map(skill => skill.trim())
@@ -274,24 +268,26 @@ Example:
             success: true,
             skills
         });
+
     } catch (error) {
+
         console.error("Suggest Skills Error:", error);
 
         res.status(500).json({
             success: false,
-            message:
-                error.message ||
-                "Failed to generate skills."
+            message: error.message || "Failed to generate skills."
         });
     }
 });
 
 // ======================================================
-// 12. IMPROVE WORK EXPERIENCE
+// 11. IMPROVE WORK EXPERIENCE
 // ======================================================
 
 app.post("/api/improve-experience", async (req, res) => {
+
     try {
+
         const {
             jobTitle,
             company,
@@ -329,24 +325,26 @@ Requirements:
             success: true,
             experience: improvedExperience.trim()
         });
+
     } catch (error) {
+
         console.error("Improve Experience Error:", error);
 
         res.status(500).json({
             success: false,
-            message:
-                error.message ||
-                "Failed to improve experience."
+            message: error.message || "Failed to improve experience."
         });
     }
 });
 
 // ======================================================
-// 13. IMPROVE PROJECT DESCRIPTION
+// 12. IMPROVE PROJECT
 // ======================================================
 
 app.post("/api/improve-project", async (req, res) => {
+
     try {
+
         const {
             projectName,
             technologies,
@@ -384,24 +382,26 @@ Requirements:
             success: true,
             description: improved.trim()
         });
+
     } catch (error) {
+
         console.error("Improve Project Error:", error);
 
         res.status(500).json({
             success: false,
-            message:
-                error.message ||
-                "Failed to improve project."
+            message: error.message || "Failed to improve project."
         });
     }
 });
 
 // ======================================================
-// 14. ANALYZE COMPLETE CV
+// 13. ANALYZE COMPLETE CV
 // ======================================================
 
 app.post("/api/analyze-cv", async (req, res) => {
+
     try {
+
         const {
             name,
             jobTitle,
@@ -443,15 +443,10 @@ ${certifications || "Not provided"}
 Provide the analysis using these sections:
 
 1. CV Overview
-
 2. Strengths
-
 3. Missing Information
-
 4. Improvement Suggestions
-
 5. ATS Optimization
-
 6. Professional Recommendations
 
 Important:
@@ -462,7 +457,6 @@ Important:
 - Do not invent achievements.
 - Give practical suggestions.
 - Keep the analysis professional.
-- Clearly explain what can be improved.
 `;
 
         const analysis = await askAI(prompt);
@@ -471,84 +465,53 @@ Important:
             success: true,
             analysis: analysis.trim()
         });
+
     } catch (error) {
+
         console.error("Analyze CV Error:", error);
 
         res.status(500).json({
             success: false,
-            message:
-                error.message ||
-                "Failed to analyze CV."
+            message: error.message || "Failed to analyze CV."
         });
     }
 });
 
 // ======================================================
-// 15. 404 ERROR HANDLER
+// 14. 404 HANDLER
 // ======================================================
 
 app.use((req, res) => {
+
     res.status(404).json({
         success: false,
         message: "API route not found.",
         path: req.originalUrl
     });
+
 });
 
 // ======================================================
-// 16. GLOBAL ERROR HANDLER
-// ======================================================
-
-app.use((err, req, res, next) => {
-    console.error("❌ Server Error:", err);
-
-    res.status(500).json({
-        success: false,
-        message: "Internal server error."
-    });
-});
-
-// ======================================================
-// 17. LOCAL SERVER
-// ======================================================
-//
-// IMPORTANT:
-// Vercel ke liye app.listen() use nahi karna.
-// Express app ko export karna hai.
-//
-// Local testing ke liye:
-// node server.js
-//
-// Agar local server chalana ho to neeche wala block
-// uncomment kar sakte ho.
-//
+// 15. LOCAL SERVER
 // ======================================================
 
 if (require.main === module) {
+
+    const PORT = process.env.PORT || 5000;
+
     app.listen(PORT, () => {
-        console.log("");
+
         console.log("======================================");
         console.log("🚀 AI CV BUILDER BACKEND");
         console.log("======================================");
-        console.log("");
-        console.log(`✅ Server running on:`);
-        console.log(`http://localhost:${PORT}`);
-        console.log("");
-        console.log("Available routes:");
-        console.log("GET  /");
-        console.log("GET  /api/health");
-        console.log("POST /api/generate-summary");
-        console.log("POST /api/suggest-skills");
-        console.log("POST /api/improve-experience");
-        console.log("POST /api/improve-project");
-        console.log("POST /api/analyze-cv");
-        console.log("");
-        console.log("======================================");
+        console.log(`Server running on http://localhost:${PORT}`);
+
     });
+
 }
 
 // ======================================================
-// 18. EXPORT APP FOR VERCEL
+// 16. EXPORT FOR VERCEL
 // ======================================================
 
 module.exports = app;
