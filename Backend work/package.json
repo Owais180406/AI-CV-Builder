@@ -2,10 +2,13 @@
   "name": "ai-cv-builder",
   "version": "1.0.0",
   "description": "AI CV Builder with Node.js, Express and OpenAI",
-  "main": "api/index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node api/index.js",
-    "dev": "node api/index.js"
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": "24.x"
   },
   "dependencies": {
     "@vercel/node": "^5.3.24",

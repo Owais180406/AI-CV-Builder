@@ -29,7 +29,7 @@ const APP_CONFIG = {
                 window.location.hostname === "127.0.0.1"
             )
                 ? "http://localhost:5000/api"
-                : "/api",
+                : "https://ai-cv-builder-kr5h.vercel.app/api",
 
     maxPhotoSize: 5 * 1024 * 1024,
 

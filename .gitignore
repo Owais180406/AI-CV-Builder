@@ -1,3 +1,2 @@
-﻿Backend work/node_modules/
-Backend work/.env
-Backend work/.env.local
+node_modules/ 
+.env 

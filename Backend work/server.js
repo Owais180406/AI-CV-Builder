@@ -1,6 +1,5 @@
 // ======================================================
-// AI CV BUILDER - BACKEND SERVER
-// Node.js + Express + OpenAI
+// AI CV BUILDER - MAIN BACKEND SERVER
 // ======================================================
 
 const express = require("express");
@@ -8,20 +7,12 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-// ======================================================
-// 1. LOAD ENVIRONMENT VARIABLES
-// ======================================================
-
 dotenv.config();
-
-// ======================================================
-// 2. CREATE EXPRESS APP
-// ======================================================
 
 const app = express();
 
 // ======================================================
-// 3. CONFIGURATION
+// CONFIGURATION
 // ======================================================
 
 const PORT = process.env.PORT || 5000;
@@ -30,7 +21,7 @@ const OPENAI_MODEL =
     process.env.OPENAI_MODEL || "gpt-5.6-luna";
 
 // ======================================================
-// 4. OPENAI CLIENT
+// OPENAI CLIENT
 // ======================================================
 
 const openai = new OpenAI({
@@ -38,7 +29,7 @@ const openai = new OpenAI({
 });
 
 // ======================================================
-// 5. MIDDLEWARE
+// MIDDLEWARE
 // ======================================================
 
 app.use(
@@ -59,7 +50,7 @@ app.use(
 );
 
 // ======================================================
-// 6. BASIC TEST ROUTE
+// ROOT ROUTE
 // ======================================================
 
 app.get("/", (req, res) => {
@@ -71,7 +62,7 @@ app.get("/", (req, res) => {
 });
 
 // ======================================================
-// 7. HEALTH CHECK
+// HEALTH CHECK
 // ======================================================
 
 app.get("/api/health", (req, res) => {
@@ -83,26 +74,38 @@ app.get("/api/health", (req, res) => {
 });
 
 // ======================================================
-// 8. CHECK API KEY
+// OPENAI API KEY CHECK
 // ======================================================
 
 app.get("/api/check-key", (req, res) => {
     res.status(200).json({
         success: true,
-        configured: Boolean(process.env.OPENAI_API_KEY),
+        configured: Boolean(
+            process.env.OPENAI_API_KEY
+        ),
         model: OPENAI_MODEL
     });
 });
 
 // ======================================================
-// 9. COMMON ERROR HANDLER
+// ERROR HANDLER FUNCTION
 // ======================================================
 
-function sendError(res, error, defaultMessage) {
-    console.error("======================================");
+function sendError(
+    res,
+    error,
+    defaultMessage
+) {
+    console.error(
+        "======================================"
+    );
+
     console.error(defaultMessage);
     console.error(error);
-    console.error("======================================");
+
+    console.error(
+        "======================================"
+    );
 
     let message = defaultMessage;
 
@@ -117,7 +120,7 @@ function sendError(res, error, defaultMessage) {
 }
 
 // ======================================================
-// 10. AI HELPER FUNCTION
+// AI FUNCTION
 // ======================================================
 
 async function askAI(prompt) {
@@ -128,7 +131,10 @@ async function askAI(prompt) {
         );
     }
 
-    if (!prompt || !String(prompt).trim()) {
+    if (
+        !prompt ||
+        !String(prompt).trim()
+    ) {
         throw new Error(
             "AI prompt cannot be empty."
         );
@@ -136,18 +142,20 @@ async function askAI(prompt) {
 
     try {
 
-        const response = await openai.responses.create({
-            model: OPENAI_MODEL,
+        const response =
+            await openai.responses.create({
 
-            instructions:
-                "You are a professional CV and resume writing assistant. " +
-                "Always keep information truthful. " +
-                "Never invent experience, education, certifications, " +
-                "achievements, skills, numbers or responsibilities. " +
-                "Only use information provided by the candidate.",
+                model: OPENAI_MODEL,
 
-            input: String(prompt)
-        });
+                instructions:
+                    "You are a professional CV and resume writing assistant. " +
+                    "Always keep information truthful. " +
+                    "Never invent experience, education, certifications, " +
+                    "achievements, skills, numbers or responsibilities. " +
+                    "Only use information provided by the candidate.",
+
+                input: String(prompt)
+            });
 
         if (!response) {
             throw new Error(
@@ -155,7 +163,8 @@ async function askAI(prompt) {
             );
         }
 
-        const outputText = response.output_text;
+        const outputText =
+            response.output_text;
 
         if (
             !outputText ||
@@ -180,7 +189,7 @@ async function askAI(prompt) {
 }
 
 // ======================================================
-// 11. GENERATE CV SUMMARY
+// GENERATE PROFESSIONAL SUMMARY
 // ======================================================
 
 app.post(
@@ -191,20 +200,20 @@ app.post(
 
             const {
                 name,
-                jobTitle,
+                title,
                 skills,
                 experience,
                 education
-            } = req.body || {};
+            } = req.body;
 
             const prompt = `
-Create a professional ATS-friendly CV summary.
+Create a professional CV summary.
 
 Candidate Name:
 ${name || "Not provided"}
 
-Job Title:
-${jobTitle || "Not provided"}
+Professional Title:
+${title || "Not provided"}
 
 Skills:
 ${skills || "Not provided"}
@@ -216,27 +225,20 @@ Education:
 ${education || "Not provided"}
 
 Requirements:
-
-- Write 3 to 5 professional sentences.
-- Make it suitable for a modern CV.
-- Make it ATS-friendly.
-- Highlight relevant skills.
-- Keep information truthful.
-- Do not invent experience.
-- Do not invent achievements.
-- Do not invent qualifications.
-- Do not invent certifications.
-- Do not invent numbers.
-- Do not use a heading.
-- Return ONLY the summary.
+- Write a professional CV summary.
+- Keep it concise.
+- Use only the information provided.
+- Do not invent facts.
+- Do not use fake achievements.
+- Do not mention information that was not provided.
 `;
 
-            const summary =
+            const result =
                 await askAI(prompt);
 
             res.status(200).json({
                 success: true,
-                summary
+                summary: result
             });
 
         } catch (error) {
@@ -244,14 +246,14 @@ Requirements:
             sendError(
                 res,
                 error,
-                "Failed to generate CV summary."
+                "Failed to generate professional summary."
             );
         }
     }
 );
 
 // ======================================================
-// 12. SUGGEST SKILLS
+// SUGGEST SKILLS
 // ======================================================
 
 app.post(
@@ -261,90 +263,40 @@ app.post(
         try {
 
             const {
-                jobTitle,
-                existingSkills
-            } = req.body || {};
+                title,
+                existingSkills,
+                experience,
+                education
+            } = req.body;
 
             const prompt = `
-Suggest professional skills for this CV.
+Suggest relevant professional skills for a CV.
 
-Job Title:
-${jobTitle || "Not provided"}
+Professional Title:
+${title || "Not provided"}
 
 Existing Skills:
-${existingSkills || "None"}
+${existingSkills || "Not provided"}
+
+Experience:
+${experience || "Not provided"}
+
+Education:
+${education || "Not provided"}
 
 Requirements:
-
-- Suggest 8 to 12 relevant professional skills.
-- Do not repeat existing skills.
-- Skills must be realistic for the job.
-- Do not invent certifications.
-- Do not invent experience.
-- Return ONLY valid JSON.
-- The JSON must be an array of strings.
-- Do not use markdown.
-- Do not add explanations.
-
-Example:
-
-[
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "Git",
-    "Responsive Design"
-]
+- Suggest skills relevant to the information provided.
+- Do not invent qualifications.
+- Do not claim the candidate already possesses a skill.
+- Return a clean list of skill suggestions.
 `;
 
             const result =
                 await askAI(prompt);
 
-            const cleanedResult =
-                result
-                    .replace(/```json/gi, "")
-                    .replace(/```/g, "")
-                    .trim();
-
-            let skills;
-
-            try {
-
-                skills =
-                    JSON.parse(cleanedResult);
-
-            } catch (parseError) {
-
-                console.error(
-                    "Invalid AI JSON:",
-                    cleanedResult
-                );
-
-                throw new Error(
-                    "AI returned invalid skills format."
-                );
-            }
-
-            if (!Array.isArray(skills)) {
-                throw new Error(
-                    "AI skills response is not an array."
-                );
-            }
-
-            skills = skills
-                .filter(
-                    skill =>
-                        typeof skill === "string"
-                )
-                .map(
-                    skill =>
-                        skill.trim()
-                )
-                .filter(Boolean);
-
             res.status(200).json({
                 success: true,
-                skills
+                skills: result
             });
 
         } catch (error) {
@@ -352,14 +304,14 @@ Example:
             sendError(
                 res,
                 error,
-                "Failed to generate skills."
+                "Failed to suggest skills."
             );
         }
     }
 );
 
 // ======================================================
-// 13. IMPROVE WORK EXPERIENCE
+// IMPROVE EXPERIENCE
 // ======================================================
 
 app.post(
@@ -369,13 +321,13 @@ app.post(
         try {
 
             const {
+                experience,
                 jobTitle,
-                company,
-                description
-            } = req.body || {};
+                company
+            } = req.body;
 
             const prompt = `
-Improve this work experience for a professional CV.
+Improve the following CV work experience.
 
 Job Title:
 ${jobTitle || "Not provided"}
@@ -383,29 +335,24 @@ ${jobTitle || "Not provided"}
 Company:
 ${company || "Not provided"}
 
-Original Description:
-${description || "Not provided"}
+Experience:
+${experience || "Not provided"}
 
 Requirements:
-
-- Make it professional.
-- Make it ATS-friendly.
-- Use strong professional language.
-- Keep the candidate's original facts.
-- Do not invent achievements.
-- Do not invent numbers.
+- Improve grammar and professional wording.
+- Make the description CV-friendly.
+- Preserve the original meaning.
 - Do not invent responsibilities.
-- Create 3 to 5 concise bullet points.
-- Return ONLY the bullet points.
+- Do not invent achievements.
+- Do not add fake numbers.
 `;
 
-            const improvedExperience =
+            const result =
                 await askAI(prompt);
 
             res.status(200).json({
                 success: true,
-                experience:
-                    improvedExperience
+                experience: result
             });
 
         } catch (error) {
@@ -420,7 +367,7 @@ Requirements:
 );
 
 // ======================================================
-// 14. IMPROVE PROJECT
+// IMPROVE PROJECT
 // ======================================================
 
 app.post(
@@ -431,9 +378,9 @@ app.post(
 
             const {
                 projectName,
-                technologies,
-                description
-            } = req.body || {};
+                projectDescription,
+                technologies
+            } = req.body;
 
             const prompt = `
 Improve this project description for a professional CV.
@@ -441,31 +388,27 @@ Improve this project description for a professional CV.
 Project Name:
 ${projectName || "Not provided"}
 
+Description:
+${projectDescription || "Not provided"}
+
 Technologies:
 ${technologies || "Not provided"}
 
-Current Description:
-${description || "Not provided"}
-
 Requirements:
-
-- Make it professional.
-- Make it ATS-friendly.
-- Mention technologies naturally.
-- Keep the information truthful.
+- Make the description professional.
+- Keep it concise.
+- Preserve factual information.
 - Do not invent features.
-- Do not invent achievements.
-- Do not invent numbers.
-- Write 2 to 4 concise bullet points.
-- Return ONLY the improved description.
+- Do not invent results or statistics.
+- Do not claim technologies that were not provided.
 `;
 
-            const improved =
+            const result =
                 await askAI(prompt);
 
             res.status(200).json({
                 success: true,
-                description: improved
+                project: result
             });
 
         } catch (error) {
@@ -480,7 +423,7 @@ Requirements:
 );
 
 // ======================================================
-// 15. ANALYZE COMPLETE CV
+// ANALYZE CV
 // ======================================================
 
 app.post(
@@ -490,73 +433,51 @@ app.post(
         try {
 
             const {
-                name,
-                jobTitle,
-                summary,
-                skills,
-                experience,
-                education,
-                projects,
-                certifications
-            } = req.body || {};
+                cvText
+            } = req.body;
+
+            if (
+                !cvText ||
+                !String(cvText).trim()
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "CV text is required."
+                });
+            }
 
             const prompt = `
-Analyze this CV as a professional ATS resume consultant.
+Analyze the following CV.
 
-Candidate Name:
-${name || "Not provided"}
+CV:
+${cvText}
 
-Job Title:
-${jobTitle || "Not provided"}
+Provide useful professional feedback about:
 
-Summary:
-${summary || "Not provided"}
+1. Professional summary
+2. Skills
+3. Experience
+4. Education
+5. Projects
+6. Certifications
+7. Formatting
+8. Grammar
+9. Clarity
+10. Areas for improvement
 
-Skills:
-${skills || "Not provided"}
-
-Experience:
-${experience || "Not provided"}
-
-Education:
-${education || "Not provided"}
-
-Projects:
-${projects || "Not provided"}
-
-Certifications:
-${certifications || "Not provided"}
-
-Provide the analysis using these sections:
-
-1. CV Overview
-
-2. Strengths
-
-3. Missing Information
-
-4. Improvement Suggestions
-
-5. ATS Optimization
-
-6. Professional Recommendations
-
-Important:
-
+Requirements:
+- Only analyze the information provided.
 - Do not invent facts.
-- Do not claim the candidate has experience they did not provide.
-- Do not invent qualifications.
-- Do not invent achievements.
 - Give practical suggestions.
-- Keep the analysis professional.
+- Keep the feedback professional.
 `;
 
-            const analysis =
+            const result =
                 await askAI(prompt);
 
             res.status(200).json({
                 success: true,
-                analysis
+                analysis: result
             });
 
         } catch (error) {
@@ -571,20 +492,22 @@ Important:
 );
 
 // ======================================================
-// 16. 404 HANDLER
+// 404 HANDLER
 // ======================================================
 
-app.use((req, res) => {
+app.use(
+    (req, res) => {
 
-    res.status(404).json({
-        success: false,
-        message: "API route not found.",
-        path: req.originalUrl
-    });
-});
+        res.status(404).json({
+            success: false,
+            message: "API route not found.",
+            path: req.originalUrl
+        });
+    }
+);
 
 // ======================================================
-// 17. GLOBAL ERROR HANDLER
+// GLOBAL ERROR HANDLER
 // ======================================================
 
 app.use(
@@ -594,10 +517,6 @@ app.use(
             "GLOBAL SERVER ERROR:",
             error
         );
-
-        if (res.headersSent) {
-            return next(error);
-        }
 
         res.status(500).json({
             success: false,
@@ -609,47 +528,50 @@ app.use(
 );
 
 // ======================================================
-// 18. START LOCAL SERVER
+// LOCAL SERVER
 // ======================================================
 
 if (require.main === module) {
 
-    app.listen(PORT, () => {
+    app.listen(
+        PORT,
+        () => {
 
-        console.log(
-            "======================================"
-        );
+            console.log(
+                "======================================"
+            );
 
-        console.log(
-            "🚀 AI CV BUILDER BACKEND"
-        );
+            console.log(
+                "🚀 AI CV BUILDER BACKEND"
+            );
 
-        console.log(
-            "======================================"
-        );
+            console.log(
+                "======================================"
+            );
 
-        console.log(
-            `Server running on http://localhost:${PORT}`
-        );
+            console.log(
+                `Server running on http://localhost:${PORT}`
+            );
 
-        console.log(
-            `OpenAI Model: ${OPENAI_MODEL}`
-        );
+            console.log(
+                `OpenAI Model: ${OPENAI_MODEL}`
+            );
 
-        console.log(
-            `API Key Configured: ${Boolean(
-                process.env.OPENAI_API_KEY
-            )}`
-        );
+            console.log(
+                `API Key Configured: ${Boolean(
+                    process.env.OPENAI_API_KEY
+                )}`
+            );
 
-        console.log(
-            "======================================"
-        );
-    });
+            console.log(
+                "======================================"
+            );
+        }
+    );
 }
 
 // ======================================================
-// 19. EXPORT FOR VERCEL
+// EXPORT EXPRESS APP FOR VERCEL
 // ======================================================
 
 module.exports = app;
