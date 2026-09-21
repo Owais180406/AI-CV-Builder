@@ -4267,11 +4267,28 @@ async function suggestSkills() {
 // ======================================================
 
 function mergeSkills(existing, incoming) {
+
+    const existingText =
+        Array.isArray(existing)
+            ? existing.join(", ")
+            : String(existing || "");
+
+    const incomingText =
+        Array.isArray(incoming)
+            ? incoming.join(", ")
+            : String(incoming || "");
+
     const current =
-        parseCommaSeparated(existing);
+        existingText
+            .split(",")
+            .map(skill => skill.trim())
+            .filter(Boolean);
 
     const newSkills =
-        parseCommaSeparated(incoming);
+        incomingText
+            .split(",")
+            .map(skill => skill.trim())
+            .filter(Boolean);
 
     const merged = [
         ...current,
