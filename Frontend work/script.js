@@ -4471,10 +4471,22 @@ async function improveProject(button) {
                 }
             );
 
-        const text =
-            extractAIText(result) ||
-            result?.project ||
-            "";
+            console.log(
+    "IMPROVE PROJECT API RESPONSE:",
+    result
+);
+
+const text =
+    typeof result?.project === "string"
+        ? result.project
+        : extractAIText(result) || "";
+
+if (!text) {
+    throw new Error(
+        "AI returned empty project description."
+    );
+}
+
 
         if (!text) {
             throw new Error(
