@@ -1,344 +1,958 @@
 /* =========================================================
-   AI CV BUILDER - COMPLETE JAVASCRIPT
+   AI CV BUILDER
+   COMPLETE FRONTEND JAVASCRIPT
+   Version 1.0
 ========================================================= */
+
+"use strict";
 
 
 /* =========================================================
    CONFIGURATION
 ========================================================= */
 
-const API_BASE_URL = "https://ai-cv-builder-nu.vercel.app";
-
-
-/* =========================================================
-   GLOBAL VARIABLES
-========================================================= */
-
-let selectedCareerField = "";
-let selectedCareerRole = "";
-let currentTemplate = 1;
-let toastTimer = null;
-
-
-/* =========================================================
-   CAREER DATA
-========================================================= */
-
-const careerData = {
-
-    Technology: {
-
-        roles: [
-            "Frontend Developer",
-            "Backend Developer",
-            "Full Stack Developer",
-            "Software Engineer",
-            "Web Developer",
-            "Mobile App Developer",
-            "AI Engineer",
-            "Machine Learning Engineer",
-            "Data Scientist",
-            "DevOps Engineer",
-            "Cybersecurity Analyst",
-            "UI/UX Designer"
-        ],
-
-        skills: [
-            "HTML",
-            "CSS",
-            "JavaScript",
-            "React",
-            "Node.js",
-            "Git",
-            "GitHub",
-            "REST APIs",
-            "SQL",
-            "Python"
-        ]
-
-    },
-
-
-    Healthcare: {
-
-        roles: [
-            "Medical Officer",
-            "Nurse",
-            "Pharmacist",
-            "Medical Assistant",
-            "Lab Technician",
-            "Healthcare Administrator",
-            "Physiotherapist"
-        ],
-
-        skills: [
-            "Patient Care",
-            "Medical Documentation",
-            "Clinical Skills",
-            "Healthcare Management",
-            "Communication",
-            "Teamwork"
-        ]
-
-    },
-
-
-    Engineering: {
-
-        roles: [
-            "Civil Engineer",
-            "Mechanical Engineer",
-            "Electrical Engineer",
-            "Electronics Engineer",
-            "Chemical Engineer",
-            "Software Engineer"
-        ],
-
-        skills: [
-            "AutoCAD",
-            "Engineering Design",
-            "Project Management",
-            "Technical Drawing",
-            "Problem Solving",
-            "MATLAB"
-        ]
-
-    },
-
-
-    Business: {
-
-        roles: [
-            "Business Analyst",
-            "Business Development Executive",
-            "Operations Manager",
-            "Project Manager",
-            "Business Consultant"
-        ],
-
-        skills: [
-            "Business Analysis",
-            "Project Management",
-            "Communication",
-            "Leadership",
-            "Microsoft Office",
-            "Problem Solving"
-        ]
-
-    },
-
-
-    Finance: {
-
-        roles: [
-            "Financial Analyst",
-            "Accountant",
-            "Finance Executive",
-            "Investment Analyst",
-            "Banking Officer"
-        ],
-
-        skills: [
-            "Financial Analysis",
-            "Accounting",
-            "Excel",
-            "Financial Reporting",
-            "Budgeting",
-            "Data Analysis"
-        ]
-
-    },
-
-
-    Marketing: {
-
-        roles: [
-            "Digital Marketing Specialist",
-            "E-commerce Specialist",
-            "SEO Specialist",
-            "Social Media Manager",
-            "Marketing Executive",
-            "Content Strategist"
-        ],
-
-        skills: [
-            "Digital Marketing",
-            "SEO",
-            "Social Media Marketing",
-            "Content Marketing",
-            "Google Analytics",
-            "Copywriting"
-        ]
-
-    },
-
-
-    Education: {
-
-        roles: [
-            "Teacher",
-            "Lecturer",
-            "Education Coordinator",
-            "Academic Advisor",
-            "Trainer"
-        ],
-
-        skills: [
-            "Teaching",
-            "Lesson Planning",
-            "Communication",
-            "Classroom Management",
-            "Research",
-            "Presentation"
-        ]
-
-    },
-
-
-    Design: {
-
-        roles: [
-            "Graphic Designer",
-            "UI/UX Designer",
-            "Web Designer",
-            "Product Designer",
-            "Visual Designer"
-        ],
-
-        skills: [
-            "Figma",
-            "Adobe Photoshop",
-            "Adobe Illustrator",
-            "UI Design",
-            "UX Design",
-            "Typography"
-        ]
-
-    },
-
-
-    Legal: {
-
-        roles: [
-            "Lawyer",
-            "Legal Assistant",
-            "Legal Advisor",
-            "Corporate Lawyer",
-            "Legal Researcher"
-        ],
-
-        skills: [
-            "Legal Research",
-            "Legal Writing",
-            "Contract Review",
-            "Communication",
-            "Case Analysis"
-        ]
-
-    },
-
-
-    Science: {
-
-        roles: [
-            "Research Scientist",
-            "Laboratory Technician",
-            "Biologist",
-            "Chemist",
-            "Research Assistant"
-        ],
-
-        skills: [
-            "Research",
-            "Data Analysis",
-            "Laboratory Skills",
-            "Scientific Writing",
-            "Experimentation"
-        ]
-
-    },
-
-
-    Hospitality: {
-
-        roles: [
-            "Hotel Manager",
-            "Front Desk Officer",
-            "Restaurant Manager",
-            "Event Coordinator",
-            "Guest Relations Officer"
-        ],
-
-        skills: [
-            "Customer Service",
-            "Hospitality Management",
-            "Communication",
-            "Event Management",
-            "Teamwork"
-        ]
-
-    },
-
-
-    Other: {
-
-        roles: [
-            "Professional",
-            "Assistant",
-            "Coordinator",
-            "Executive",
-            "Specialist"
-        ],
-
-        skills: [
-            "Communication",
-            "Teamwork",
-            "Leadership",
-            "Problem Solving",
-            "Time Management"
-        ]
-
-    }
-
+const APP_CONFIG = {
+    storageKey: "ai_cv_builder_data_v1",
+
+    /*
+        Local development:
+        http://localhost:5000/api
+
+        Production:
+        /api
+    */
+    apiBase:
+        window.location.protocol === "file:"
+            ? "http://localhost:5000/api"
+            : (
+                window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+            )
+                ? "http://localhost:5000/api"
+                : "/api",
+
+    maxPhotoSize: 5 * 1024 * 1024,
+
+    pdfFileName: "Professional-CV.pdf",
+
+    autosaveDelay: 500,
+
+    toastDuration: 3000
 };
 
 
 /* =========================================================
-   DOM READY
+   GLOBAL STATE
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
+let currentTemplate = 1;
 
-    setupCareerSearch();
+let experienceCount = 0;
+let educationCount = 0;
+let projectCount = 0;
+let certificationCount = 0;
+let languageCount = 0;
 
-    setupLivePreview();
+let autosaveTimer = null;
+let toastTimer = null;
 
-    setupCountryCity();
+let isRestoringData = false;
 
-    setupProfilePhoto();
-
-    setupInputFormatting();
-
-    updatePreview();
-
-    updateProgress();
-
-});
+let currentPhotoData = "";
 
 
 /* =========================================================
-   HTML ESCAPE
+   DOM HELPERS
 ========================================================= */
+
+function $(selector, parent = document) {
+    return parent.querySelector(selector);
+}
+
+
+function $$(selector, parent = document) {
+    return Array.from(parent.querySelectorAll(selector));
+}
+
+
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+
+function safeText(value) {
+    return String(value ?? "").trim();
+}
+
 
 function escapeHTML(value) {
 
-    return String(value || "")
+    return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
 
+
+function normalizeText(value) {
+    return safeText(value)
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+
+function debounceSave() {
+
+    clearTimeout(autosaveTimer);
+
+    autosaveTimer = setTimeout(() => {
+        saveCVData();
+    }, APP_CONFIG.autosaveDelay);
+}
+
+
+/* =========================================================
+   TOAST SYSTEM
+========================================================= */
+
+function showToast(message, type = "success") {
+
+    const toast = getElement("toast");
+    const toastMessage = getElement("toastMessage");
+    const toastIcon = getElement("toastIcon");
+
+    if (!toast || !toastMessage) {
+        return;
+    }
+
+    clearTimeout(toastTimer);
+
+    toastMessage.textContent = message;
+
+    if (toastIcon) {
+
+        toastIcon.className =
+            type === "error"
+                ? "fa-solid fa-circle-exclamation"
+                : type === "warning"
+                    ? "fa-solid fa-triangle-exclamation"
+                    : "fa-solid fa-circle-check";
+    }
+
+    toast.classList.remove("show", "error", "warning");
+
+    if (type === "error") {
+        toast.classList.add("error");
+    }
+
+    if (type === "warning") {
+        toast.classList.add("warning");
+    }
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, APP_CONFIG.toastDuration);
+}
+
+
+/* =========================================================
+   BUTTON LOADING STATE
+========================================================= */
+
+function setButtonLoading(button, loading, loadingText = "Working...") {
+
+    if (!button) {
+        return;
+    }
+
+    if (loading) {
+
+        if (!button.dataset.originalHTML) {
+            button.dataset.originalHTML = button.innerHTML;
+        }
+
+        button.disabled = true;
+
+        button.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            ${escapeHTML(loadingText)}
+        `;
+
+    } else {
+
+        button.disabled = false;
+
+        if (button.dataset.originalHTML) {
+            button.innerHTML = button.dataset.originalHTML;
+        }
+    }
+}
+
+
+/* =========================================================
+   COUNTRY → CITY DATA
+========================================================= */
+
+const countryCities = {
+
+    Pakistan: [
+        "Karachi",
+        "Lahore",
+        "Islamabad",
+        "Rawalpindi",
+        "Faisalabad",
+        "Multan",
+        "Peshawar",
+        "Quetta",
+        "Hyderabad",
+        "Sialkot",
+        "Gujranwala",
+        "Bahawalpur",
+        "Sukkur",
+        "Abbottabad",
+        "Mardan"
+    ],
+
+    India: [
+        "Mumbai",
+        "Delhi",
+        "Bangalore",
+        "Hyderabad",
+        "Chennai",
+        "Kolkata",
+        "Pune",
+        "Ahmedabad",
+        "Jaipur",
+        "Surat"
+    ],
+
+    "United Arab Emirates": [
+        "Dubai",
+        "Abu Dhabi",
+        "Sharjah",
+        "Ajman",
+        "Al Ain",
+        "Ras Al Khaimah"
+    ],
+
+    "Saudi Arabia": [
+        "Riyadh",
+        "Jeddah",
+        "Mecca",
+        "Medina",
+        "Dammam",
+        "Khobar",
+        "Taif"
+    ],
+
+    "United Kingdom": [
+        "London",
+        "Manchester",
+        "Birmingham",
+        "Liverpool",
+        "Leeds",
+        "Bristol",
+        "Glasgow",
+        "Edinburgh"
+    ],
+
+    "United States": [
+        "New York",
+        "Los Angeles",
+        "Chicago",
+        "Houston",
+        "Phoenix",
+        "Philadelphia",
+        "San Antonio",
+        "San Diego",
+        "Dallas",
+        "San Francisco"
+    ],
+
+    Canada: [
+        "Toronto",
+        "Vancouver",
+        "Montreal",
+        "Calgary",
+        "Ottawa",
+        "Edmonton",
+        "Winnipeg"
+    ],
+
+    Australia: [
+        "Sydney",
+        "Melbourne",
+        "Brisbane",
+        "Perth",
+        "Adelaide",
+        "Canberra",
+        "Gold Coast"
+    ],
+
+    Germany: [
+        "Berlin",
+        "Munich",
+        "Hamburg",
+        "Frankfurt",
+        "Cologne",
+        "Stuttgart",
+        "Düsseldorf"
+    ],
+
+    Other: []
+};
+
+
+/* =========================================================
+   CAREER ROLE DATA
+========================================================= */
+
+const careerRoles = {
+
+    Technology: [
+        "Frontend Developer",
+        "Backend Developer",
+        "Full Stack Developer",
+        "Software Engineer",
+        "Web Developer",
+        "Mobile App Developer",
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist",
+        "DevOps Engineer",
+        "Cybersecurity Analyst",
+        "Cloud Engineer",
+        "UI/UX Designer",
+        "QA Engineer"
+    ],
+
+    Healthcare: [
+        "Medical Officer",
+        "Registered Nurse",
+        "Medical Assistant",
+        "Pharmacist",
+        "Healthcare Administrator",
+        "Medical Laboratory Technologist",
+        "Physiotherapist",
+        "Clinical Research Associate"
+    ],
+
+    Engineering: [
+        "Software Engineer",
+        "Civil Engineer",
+        "Mechanical Engineer",
+        "Electrical Engineer",
+        "Electronics Engineer",
+        "Chemical Engineer",
+        "Industrial Engineer",
+        "Project Engineer",
+        "Quality Engineer"
+    ],
+
+    Business: [
+        "Business Analyst",
+        "Business Development Executive",
+        "Operations Manager",
+        "Business Consultant",
+        "Project Manager",
+        "Product Manager",
+        "Entrepreneur",
+        "Management Trainee"
+    ],
+
+    Finance: [
+        "Financial Analyst",
+        "Accountant",
+        "Investment Analyst",
+        "Finance Manager",
+        "Audit Associate",
+        "Tax Consultant",
+        "Banking Officer",
+        "Risk Analyst"
+    ],
+
+    Marketing: [
+        "Digital Marketing Specialist",
+        "SEO Specialist",
+        "Content Strategist",
+        "Social Media Manager",
+        "Marketing Executive",
+        "Brand Manager",
+        "Growth Marketing Specialist",
+        "Performance Marketing Specialist"
+    ],
+
+    Education: [
+        "Teacher",
+        "Lecturer",
+        "Academic Coordinator",
+        "Education Consultant",
+        "Curriculum Developer",
+        "Instructional Designer",
+        "Teaching Assistant"
+    ],
+
+    Design: [
+        "UI/UX Designer",
+        "Graphic Designer",
+        "Product Designer",
+        "Web Designer",
+        "Visual Designer",
+        "Motion Graphics Designer",
+        "Brand Designer"
+    ],
+
+    Legal: [
+        "Legal Assistant",
+        "Legal Advisor",
+        "Corporate Lawyer",
+        "Legal Consultant",
+        "Compliance Officer",
+        "Paralegal"
+    ],
+
+    Science: [
+        "Research Scientist",
+        "Laboratory Scientist",
+        "Research Assistant",
+        "Data Scientist",
+        "Biotechnologist",
+        "Environmental Scientist",
+        "Scientific Researcher"
+    ],
+
+    Hospitality: [
+        "Hotel Manager",
+        "Front Office Manager",
+        "Guest Relations Officer",
+        "Event Coordinator",
+        "Restaurant Manager",
+        "Hospitality Executive",
+        "Travel Consultant"
+    ],
+
+    Other: [
+        "Professional",
+        "Specialist",
+        "Consultant",
+        "Coordinator",
+        "Executive",
+        "Manager"
+    ]
+};
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", initializeApp);
+
+
+function initializeApp() {
+
+    try {
+
+        setupCountryCity();
+
+        setupPhotoUpload();
+
+        setupLivePreview();
+
+        setupModalBehavior();
+
+        setupGlobalKeyboardEvents();
+
+        setupFormEvents();
+
+        setupInitialRepeatableItems();
+
+        updateAllPreviews();
+
+        restoreCVData();
+
+        updateAllPreviews();
+
+        updateCounters();
+
+        setCurrentDateLimits();
+
+    } catch (error) {
+
+        console.error("AI CV Builder initialization error:", error);
+
+        showToast(
+            "Some frontend features could not initialize.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   DATE LIMITS
+========================================================= */
+
+function setCurrentDateLimits() {
+
+    const dob = getElement("dateOfBirth");
+
+    if (dob) {
+
+        const today = new Date();
+
+        const year = today.getFullYear();
+
+        const month = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        dob.max = `${year}-${month}-${day}`;
+    }
+}
+
+
+/* =========================================================
+   INITIAL REPEATABLE ITEMS
+========================================================= */
+
+function setupInitialRepeatableItems() {
+
+    experienceCount =
+        $$(".experience-item").length;
+
+    educationCount =
+        $$(".education-item").length;
+
+    projectCount =
+        $$(".project-item").length;
+
+    certificationCount =
+        $$(".certification-item").length;
+
+    languageCount =
+        $$(".language-item").length;
+}
+
+
+/* =========================================================
+   COUNTRY / CITY
+========================================================= */
+
+function setupCountryCity() {
+
+    const country = getElement("country");
+    const city = getElement("city");
+
+    if (!country || !city) {
+        return;
+    }
+
+    country.addEventListener("change", () => {
+
+        const selectedCountry = country.value;
+
+        updateCityOptions(selectedCountry);
+
+        updateLocation();
+
+        updateAllPreviews();
+
+        debounceSave();
+    });
+
+    city.addEventListener("change", () => {
+
+        updateLocation();
+
+        updateAllPreviews();
+
+        debounceSave();
+    });
+}
+
+
+function updateCityOptions(countryName, selectedCity = "") {
+
+    const city = getElement("city");
+
+    if (!city) {
+        return;
+    }
+
+    city.innerHTML = "";
+
+    if (!countryName) {
+
+        city.disabled = true;
+
+        const option = document.createElement("option");
+
+        option.value = "";
+
+        option.textContent =
+            "Select country first";
+
+        city.appendChild(option);
+
+        return;
+    }
+
+    const cities =
+        countryCities[countryName] || [];
+
+    city.disabled = cities.length === 0;
+
+    const placeholder =
+        document.createElement("option");
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+        cities.length
+            ? "Select City"
+            : "City not available";
+
+    city.appendChild(placeholder);
+
+    cities.forEach(cityName => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = cityName;
+
+        option.textContent = cityName;
+
+        city.appendChild(option);
+    });
+
+    if (
+        selectedCity &&
+        cities.includes(selectedCity)
+    ) {
+        city.value = selectedCity;
+    }
+}
+
+
+function updateLocation() {
+
+    const country = getElement("country");
+    const city = getElement("city");
+    const location = getElement("location");
+
+    if (!country || !city || !location) {
+        return;
+    }
+
+    const countryValue =
+        safeText(country.value);
+
+    const cityValue =
+        safeText(city.value);
+
+    let result = "";
+
+    if (cityValue && countryValue) {
+        result = `${cityValue}, ${countryValue}`;
+    } else if (countryValue) {
+        result = countryValue;
+    }
+
+    location.value = result;
+}
+
+
+/* =========================================================
+   PHOTO UPLOAD
+========================================================= */
+
+function setupPhotoUpload() {
+
+    const input = getElement("profilePhoto");
+
+    if (!input) {
+        return;
+    }
+
+    input.addEventListener("change", handlePhotoUpload);
+}
+
+
+function handlePhotoUpload(event) {
+
+    const file =
+        event.target.files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+
+        showToast(
+            "Please select a valid image file.",
+            "error"
+        );
+
+        event.target.value = "";
+
+        return;
+    }
+
+    if (file.size > APP_CONFIG.maxPhotoSize) {
+
+        showToast(
+            "Photo size must be 5 MB or smaller.",
+            "error"
+        );
+
+        event.target.value = "";
+
+        return;
+    }
+
+    const reader =
+        new FileReader();
+
+    reader.onload = function () {
+
+        currentPhotoData =
+            reader.result;
+
+        renderPhoto(currentPhotoData);
+
+        debounceSave();
+
+        showToast(
+            "Profile photo added successfully."
+        );
+    };
+
+    reader.onerror = function () {
+
+        showToast(
+            "Unable to read the selected photo.",
+            "error"
+        );
+    };
+
+    reader.readAsDataURL(file);
+}
+
+
+function renderPhoto(src) {
+
+    const preview =
+        getElement("photoPreview");
+
+    const previewPhoto =
+        getElement("previewPhoto");
+
+    const defaultIcon =
+        getElement("defaultPhotoIcon");
+
+    if (preview) {
+
+        preview.innerHTML = "";
+
+        if (src) {
+
+            const img =
+                document.createElement("img");
+
+            img.src = src;
+
+            img.alt = "Profile Photo";
+
+            preview.appendChild(img);
+
+        } else {
+
+            const icon =
+                document.createElement("i");
+
+            icon.className =
+                "fa-solid fa-user";
+
+            preview.appendChild(icon);
+        }
+    }
+
+    if (previewPhoto) {
+
+        if (src) {
+
+            previewPhoto.src = src;
+
+            previewPhoto.style.display =
+                "block";
+
+            if (defaultIcon) {
+                defaultIcon.style.display =
+                    "none";
+            }
+
+        } else {
+
+            previewPhoto.removeAttribute("src");
+
+            previewPhoto.style.display =
+                "none";
+
+            if (defaultIcon) {
+                defaultIcon.style.display =
+                    "block";
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   LIVE PREVIEW EVENTS
+========================================================= */
+
+function setupLivePreview() {
+
+    document.addEventListener(
+        "input",
+        handleLiveInput
+    );
+
+    document.addEventListener(
+        "change",
+        handleLiveChange
+    );
+}
+
+
+function handleLiveInput(event) {
+
+    const target =
+        event.target;
+
+    if (!target) {
+        return;
+    }
+
+    if (
+        target.matches(
+            "input, textarea, select"
+        )
+    ) {
+
+        updateAllPreviews();
+
+        debounceSave();
+    }
+}
+
+
+function handleLiveChange(event) {
+
+    const target =
+        event.target;
+
+    if (!target) {
+        return;
+    }
+
+    if (
+        target.matches(
+            "input, textarea, select"
+        )
+    ) {
+
+        updateAllPreviews();
+
+        debounceSave();
+    }
+}
+
+
+/* =========================================================
+   FORM EVENTS
+========================================================= */
+
+function setupFormEvents() {
+
+    const dob =
+        getElement("dateOfBirth");
+
+    if (dob) {
+
+        dob.addEventListener(
+            "change",
+            validateDateOfBirth
+        );
+    }
+
+    const phone =
+        getElement("phone");
+
+    if (phone) {
+
+        phone.addEventListener(
+            "input",
+            () => {
+
+                phone.value =
+                    phone.value
+                        .replace(
+                            /[^0-9+\-() ]/g,
+                            ""
+                        )
+                        .slice(0, 20);
+            }
+        );
+    }
+}
+
+
+function validateDateOfBirth() {
+
+    const dob =
+        getElement("dateOfBirth");
+
+    if (!dob || !dob.value) {
+        return true;
+    }
+
+    const selected =
+        new Date(
+            `${dob.value}T00:00:00`
+        );
+
+    const today =
+        new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    if (selected > today) {
+
+        dob.value = "";
+
+        showToast(
+            "Date of birth cannot be in the future.",
+            "error"
+        );
+
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -346,908 +960,1123 @@ function escapeHTML(value) {
    CAREER FIELD
 ========================================================= */
 
-function setupCareerSearch() {
+document.addEventListener(
+    "change",
+    event => {
 
-    const careerField = document.getElementById("careerField");
+        if (
+            event.target &&
+            event.target.id === "careerField"
+        ) {
 
-    if (!careerField) return;
+            updateCareerRoles(
+                event.target.value
+            );
 
-    careerField.addEventListener("change", function () {
+            updateCareerGuide(
+                event.target.value
+            );
 
-        selectCareerField(this.value);
-
-    });
-
-
-    if (careerField.value) {
-
-        selectCareerField(careerField.value);
-
-    } else {
-
-        renderCareerRoles();
-
-    }
-
-}
-
-
-/* =========================================================
-   SELECT CAREER FIELD
-========================================================= */
-
-function selectCareerField(field) {
-
-    selectedCareerField = field || "";
-
-    selectedCareerRole = "";
-
-    const jobTitle = document.getElementById("jobTitle");
-
-
-    if (!field) {
-
-        if (jobTitle) {
-
-            jobTitle.value = "";
-
+            debounceSave();
         }
-
-        renderCareerRoles();
-
-        updateCareerGuidance();
-
-        updatePreview();
-
-        updateProgress();
-
-        return;
-
     }
+);
 
 
-    const data = careerData[field];
+function updateCareerRoles(field) {
 
-    if (!data) return;
+    const container =
+        getElement("careerRoleOptions");
 
-
-    renderCareerRoles();
-
-    updateCareerGuidance();
-
-    updatePreview();
-
-    updateProgress();
-
-    showToast(`${field} selected.`, "success");
-
-}
-
-
-/* =========================================================
-   RENDER CAREER ROLES
-========================================================= */
-
-function renderCareerRoles() {
-
-    const container = document.getElementById("careerRoleOptions");
-
-    if (!container) return;
-
+    if (!container) {
+        return;
+    }
 
     container.innerHTML = "";
 
+    if (!field) {
 
-    if (
-        !selectedCareerField ||
-        !careerData[selectedCareerField]
-    ) {
+        const placeholder =
+            document.createElement("div");
 
-        container.innerHTML = `
+        placeholder.className =
+            "career-role-placeholder";
 
-            <div class="career-role-placeholder">
+        placeholder.textContent =
+            "Select a career field to see recommended job roles.";
 
-                Select a career field to see
-                recommended job roles.
-
-            </div>
-
-        `;
+        container.appendChild(
+            placeholder
+        );
 
         return;
-
     }
-
 
     const roles =
-        careerData[selectedCareerField].roles || [];
+        careerRoles[field] ||
+        careerRoles.Other;
 
-
-    if (!roles.length) {
-
-        container.innerHTML = `
-
-            <div class="career-role-placeholder">
-
-                No role suggestions available
-                for this field.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    roles.forEach(function (role) {
+    roles.forEach(role => {
 
         const button =
             document.createElement("button");
-
 
         button.type = "button";
 
         button.className =
             "career-role-option";
 
-
-        if (role === selectedCareerRole) {
-
-            button.classList.add("active");
-
-        }
-
-
-        button.innerHTML = `
-
-            <span>
-                ${escapeHTML(role)}
-            </span>
-
-        `;
-
+        button.textContent = role;
 
         button.addEventListener(
             "click",
-            function () {
+            () => {
 
-                selectCareerRole(role);
+                const jobTitle =
+                    getElement("jobTitle");
 
+                if (jobTitle) {
+
+                    jobTitle.value =
+                        role;
+
+                    updateAllPreviews();
+
+                    debounceSave();
+
+                    showToast(
+                        `${role} selected.`
+                    );
+                }
             }
         );
 
-
         container.appendChild(button);
-
     });
-
 }
 
 
-/* =========================================================
-   SELECT CAREER ROLE
-========================================================= */
-
-function selectCareerRole(role) {
-
-    selectedCareerRole = role || "";
-
-    const jobTitle =
-        document.getElementById("jobTitle");
-
-
-    if (jobTitle) {
-
-        jobTitle.value = role;
-
-    }
-
-
-    renderCareerRoles();
-
-    updatePreview();
-
-    updateProgress();
-
-
-    showToast(
-        `${role} selected as your job title.`,
-        "success"
-    );
-
-}
-
-
-/* =========================================================
-   CLEAR CAREER FIELD
-========================================================= */
-
-function clearCareerField() {
-
-    selectedCareerField = "";
-
-    selectedCareerRole = "";
-
-
-    const careerField =
-        document.getElementById("careerField");
-
-    const jobTitle =
-        document.getElementById("jobTitle");
-
-
-    if (careerField) {
-
-        careerField.value = "";
-
-    }
-
-
-    if (jobTitle) {
-
-        jobTitle.value = "";
-
-    }
-
-
-    renderCareerRoles();
-
-    updateCareerGuidance();
-
-}
-
-
-/* =========================================================
-   SUGGEST CAREER ROLE
-========================================================= */
-
-function suggestCareerRole() {
-
-    if (
-        !selectedCareerField ||
-        !careerData[selectedCareerField]
-    ) {
-
-        showToast(
-            "Please select a career field first.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const roles =
-        careerData[selectedCareerField].roles || [];
-
-
-    if (!roles.length) {
-
-        showToast(
-            "No role suggestions available.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const role =
-        roles[
-            Math.floor(
-                Math.random() * roles.length
-            )
-        ];
-
-
-    selectCareerRole(role);
-
-}
-
-
-/* =========================================================
-   AI CAREER GUIDANCE
-========================================================= */
-
-function updateCareerGuidance() {
+function updateCareerGuide(field) {
 
     const guide =
-        document.getElementById("aiGuideContent");
+        getElement("aiGuideContent");
 
+    if (!guide) {
+        return;
+    }
 
-    if (!guide) return;
-
-
-    if (
-        !selectedCareerField ||
-        !careerData[selectedCareerField]
-    ) {
+    if (!field) {
 
         guide.textContent =
             "Select a career field to receive AI-powered career guidance.";
 
         return;
-
     }
 
+    const guides = {
 
-    const data =
-        careerData[selectedCareerField];
+        Technology:
+            "Focus on technical skills, projects, GitHub, frameworks, programming languages and measurable development achievements.",
+
+        Healthcare:
+            "Highlight clinical knowledge, certifications, practical experience, patient-care skills and relevant qualifications.",
+
+        Engineering:
+            "Showcase technical projects, engineering tools, problem-solving ability, internships and measurable project results.",
+
+        Business:
+            "Highlight leadership, communication, operations, strategy, business development and measurable achievements.",
+
+        Finance:
+            "Emphasize financial analysis, accounting, Excel, financial modeling, reporting and relevant certifications.",
+
+        Marketing:
+            "Highlight campaigns, SEO, social media, analytics, content creation and measurable marketing results.",
+
+        Education:
+            "Emphasize teaching experience, academic achievements, curriculum development and communication skills.",
+
+        Design:
+            "Showcase your portfolio, design tools, visual thinking, UX knowledge and completed design projects.",
+
+        Legal:
+            "Highlight legal research, documentation, compliance, internships, case-related experience and relevant qualifications.",
+
+        Science:
+            "Focus on research, laboratory experience, scientific methods, publications, data analysis and technical skills.",
+
+        Hospitality:
+            "Highlight customer service, communication, operations, event management and hospitality experience.",
+
+        Other:
+            "Choose skills, achievements and experience that directly match the role you want."
+    };
+
+    guide.textContent =
+        guides[field] ||
+        guides.Other;
+}
 
 
-    guide.innerHTML = `
+/* =========================================================
+   PROFESSIONAL ROLE SUGGESTION
+========================================================= */
 
-        <strong>
-            ${escapeHTML(selectedCareerField)}
-        </strong>
+function suggestCareerRole() {
 
-        is a great starting point for building
-        your CV.
+    const careerField =
+        getElement("careerField");
 
-        <br><br>
+    const jobTitle =
+        getElement("jobTitle");
 
-        Recommended skills include:
+    if (!careerField || !jobTitle) {
+        return;
+    }
 
-        <strong>
-            ${data.skills
-                .slice(0, 5)
-                .map(escapeHTML)
-                .join(", ")}
-        </strong>.
+    if (!careerField.value) {
 
-        <br><br>
+        showToast(
+            "Please select a career field first.",
+            "warning"
+        );
 
-        Choose one of the recommended roles above
-        to automatically add it as your Job Title.
+        careerField.focus();
 
+        return;
+    }
+
+    const roles =
+        careerRoles[careerField.value] ||
+        careerRoles.Other;
+
+    if (!roles.length) {
+        return;
+    }
+
+    const current =
+        safeText(jobTitle.value);
+
+    let availableRoles =
+        roles.filter(
+            role => role !== current
+        );
+
+    if (!availableRoles.length) {
+        availableRoles = roles;
+    }
+
+    const randomRole =
+        availableRoles[
+            Math.floor(
+                Math.random() *
+                availableRoles.length
+            )
+        ];
+
+    jobTitle.value =
+        randomRole;
+
+    updateAllPreviews();
+
+    debounceSave();
+
+    showToast(
+        `Suggested role: ${randomRole}`
+    );
+}
+
+
+/* =========================================================
+   GENERIC REPEATABLE ITEM HELPERS
+========================================================= */
+
+function addRemoveButton(container) {
+
+    if (!container) {
+        return;
+    }
+
+    const button =
+        document.createElement("button");
+
+    button.type = "button";
+
+    button.className =
+        "remove-button";
+
+    button.innerHTML = `
+        <i class="fa-solid fa-trash"></i>
+        Remove
     `;
 
+    button.addEventListener(
+        "click",
+        () => {
+
+            const item =
+                button.closest(
+                    ".repeatable-item"
+                );
+
+            if (!item) {
+                return;
+            }
+
+            const parent =
+                item.parentElement;
+
+            const items =
+                parent
+                    ? parent.querySelectorAll(
+                        ".repeatable-item"
+                    )
+                    : [];
+
+            if (items.length <= 1) {
+
+                clearRepeatableItem(item);
+
+                showToast(
+                    "The last item was cleared."
+                );
+
+                updateAllPreviews();
+
+                debounceSave();
+
+                return;
+            }
+
+            item.remove();
+
+            updateCounters();
+
+            updateAllPreviews();
+
+            debounceSave();
+
+            showToast(
+                "Item removed."
+            );
+        }
+    );
+
+    container.appendChild(button);
 }
 
 
-/* =========================================================
-   LIVE PREVIEW SETUP
-========================================================= */
+function clearRepeatableItem(item) {
 
-function setupLivePreview() {
+    if (!item) {
+        return;
+    }
 
-    const selectors = [
+    $$(
+        "input, textarea, select",
+        item
+    ).forEach(field => {
 
-        "#name",
-        "#email",
-        "#phone",
-        "#dateOfBirth",
-        "#country",
-        "#city",
-        "#address",
-        "#linkedin",
-        "#github",
-        "#jobTitle",
-        "#summary",
-        "#skills"
-
-    ];
-
-
-    selectors.forEach(function (selector) {
-
-        const element =
-            document.querySelector(selector);
-
-
-        if (!element) return;
-
-
-        element.addEventListener(
-            "input",
-            updatePreview
-        );
-
-
-        element.addEventListener(
-            "change",
-            updatePreview
-        );
+        field.value = "";
 
     });
+}
 
 
-    document.addEventListener(
-        "input",
-        function (event) {
+function createRepeatableItem(
+    type,
+    html
+) {
 
-            if (
-                event.target.matches(
-                    ".experience-job-title, " +
-                    ".experience-company, " +
-                    ".experience-start, " +
-                    ".experience-end, " +
-                    ".experience-description, " +
-                    ".education-degree, " +
-                    ".education-institution, " +
-                    ".education-start, " +
-                    ".education-end, " +
-                    ".education-details, " +
-                    ".project-name, " +
-                    ".project-technologies, " +
-                    ".project-description, " +
-                    ".certification-name, " +
-                    ".certification-issuer, " +
-                    ".certification-year, " +
-                    ".language-name"
-                )
-            ) {
+    const item =
+        document.createElement("div");
 
-                updatePreview();
+    item.className =
+        `repeatable-item ${type}-item`;
 
-                updateProgress();
+    item.innerHTML =
+        html;
 
-            }
+    addRemoveButton(item);
 
-        }
-    );
-
-
-    document.addEventListener(
-        "change",
-        function (event) {
-
-            if (
-                event.target.matches(
-                    ".language-level"
-                )
-            ) {
-
-                updatePreview();
-
-                updateProgress();
-
-            }
-
-        }
-    );
-
+    return item;
 }
 
 
 /* =========================================================
-   UPDATE LIVE PREVIEW
+   EXPERIENCE
 ========================================================= */
 
-function updatePreview() {
+function addExperience() {
 
-    updateBasicPreview();
+    const container =
+        getElement("experienceContainer");
 
-    updateExperiencePreview();
+    if (!container) {
+        return;
+    }
 
-    updateEducationPreview();
+    const item =
+        createRepeatableItem(
+            "experience",
+            `
+            <div class="form-grid">
 
-    updateSkillsPreview();
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input
+                        type="text"
+                        class="experience-job-title"
+                        placeholder="e.g. Frontend Developer"
+                    >
+                </div>
 
-    updateProjectsPreview();
+                <div class="form-group">
+                    <label>Company</label>
+                    <input
+                        type="text"
+                        class="experience-company"
+                        placeholder="Company Name"
+                    >
+                </div>
 
-    updateCertificationsPreview();
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input
+                        type="month"
+                        class="experience-start"
+                    >
+                </div>
 
-    updateLanguagesPreview();
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input
+                        type="month"
+                        class="experience-end"
+                    >
+                </div>
 
+                <div class="form-group full-width">
+
+                    <label>Description</label>
+
+                    <textarea
+                        class="experience-description"
+                        rows="5"
+                        placeholder="Describe your responsibilities..."
+                    ></textarea>
+
+                    <button
+                        type="button"
+                        class="ai-button"
+                        onclick="improveExperience(this)"
+                    >
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Improve with AI
+                    </button>
+
+                </div>
+
+            </div>
+            `
+        );
+
+    container.appendChild(item);
+
+    experienceCount++;
+
+    updateCounters();
+
+    debounceSave();
+
+    updateAllPreviews();
+
+    item.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
 }
 
 
 /* =========================================================
-   BASIC INFORMATION PREVIEW
+   EDUCATION
 ========================================================= */
 
-function updateBasicPreview() {
+function addEducation() {
 
-    const name =
-        getValue("name") ||
-        "Your Name";
+    const container =
+        getElement("educationContainer");
 
-
-    const jobTitle =
-        getValue("jobTitle") ||
-        "Professional Title";
-
-
-    const email =
-        getValue("email") ||
-        "email@example.com";
-
-
-    const phone =
-        getValue("phone") ||
-        "+92 300 0000000";
-
-
-    const country =
-        getValue("country");
-
-
-    const city =
-        getValue("city");
-
-
-    const address =
-        getValue("address");
-
-
-    const linkedin =
-        getValue("linkedin");
-
-
-    const github =
-        getValue("github");
-
-
-    setText(
-        "previewName",
-        name
-    );
-
-
-    setText(
-        "previewJobTitle",
-        jobTitle
-    );
-
-
-    setHTML(
-        "previewEmail",
-        `<i class="fa-solid fa-envelope"></i> ${escapeHTML(email)}`
-    );
-
-
-    setHTML(
-        "previewPhone",
-        `<i class="fa-solid fa-phone"></i> ${escapeHTML(phone)}`
-    );
-
-
-    let locationParts = [];
-
-
-    if (address) {
-
-        locationParts.push(address);
-
+    if (!container) {
+        return;
     }
 
+    const item =
+        createRepeatableItem(
+            "education",
+            `
+            <div class="form-grid">
 
-    if (city) {
+                <div class="form-group">
 
-        locationParts.push(city);
+                    <label>
+                        Degree / Qualification
+                    </label>
 
-    }
+                    <input
+                        type="text"
+                        class="education-degree"
+                        placeholder="e.g. Bachelor's in Computer Science"
+                    >
 
+                </div>
 
-    if (country) {
+                <div class="form-group">
 
-        locationParts.push(country);
+                    <label>
+                        Institution
+                    </label>
 
-    }
+                    <input
+                        type="text"
+                        class="education-institution"
+                        placeholder="University / College"
+                    >
 
+                </div>
 
-    const location =
-        locationParts.length
-            ? locationParts.join(", ")
-            : "Pakistan";
+                <div class="form-group">
 
+                    <label>
+                        Start Year
+                    </label>
 
-    setHTML(
-        "previewLocation",
-        `<i class="fa-solid fa-location-dot"></i> ${escapeHTML(location)}`
-    );
+                    <input
+                        type="number"
+                        class="education-start"
+                        placeholder="2022"
+                        min="1950"
+                        max="2100"
+                    >
 
+                </div>
 
-    const linkedinElement =
-        document.getElementById(
-            "previewLinkedin"
+                <div class="form-group">
+
+                    <label>
+                        End Year
+                    </label>
+
+                    <input
+                        type="number"
+                        class="education-end"
+                        placeholder="2026"
+                        min="1950"
+                        max="2100"
+                    >
+
+                </div>
+
+                <div class="form-group full-width">
+
+                    <label>
+                        Details
+                    </label>
+
+                    <textarea
+                        class="education-details"
+                        rows="3"
+                        placeholder="Add relevant details..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+            `
         );
 
+    container.appendChild(item);
 
-    if (linkedinElement) {
+    educationCount++;
 
-        if (linkedin) {
+    updateCounters();
 
-            linkedinElement.innerHTML = `
+    debounceSave();
 
-                <a
-                    href="${escapeHTML(linkedin)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <i class="fa-brands fa-linkedin"></i>
-                    LinkedIn
-                </a>
+    updateAllPreviews();
 
-            `;
-
-        } else {
-
-            linkedinElement.innerHTML =
-                `<i class="fa-brands fa-linkedin"></i> LinkedIn`;
-
-        }
-
-    }
-
-
-    const githubElement =
-        document.getElementById(
-            "previewGithub"
-        );
-
-
-    if (githubElement) {
-
-        if (github) {
-
-            githubElement.innerHTML = `
-
-                <a
-                    href="${escapeHTML(github)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <i class="fa-brands fa-github"></i>
-                    GitHub
-                </a>
-
-            `;
-
-        } else {
-
-            githubElement.innerHTML =
-                `<i class="fa-brands fa-github"></i> GitHub`;
-
-        }
-
-    }
-
-
-    const summary =
-        getValue("summary") ||
-        "Your professional summary will appear here.";
-
-
-    setText(
-        "previewSummary",
-        summary
-    );
-
+    item.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
 }
 
 
 /* =========================================================
-   NOTE
+   PROJECTS
 ========================================================= */
 
-/*
-   Baqi 3,000+ lines bhi isi exact original code ka
-   continuation hain.
+function addProject() {
 
-   Important production URL:
-   https://ai-cv-builder-nu.vercel.app
-*/
+    const container =
+        getElement("projectsContainer");
 
+    if (!container) {
+        return;
+    }
 
-// PART2
+    const item =
+        createRepeatableItem(
+            "project",
+            `
+            <div class="form-grid">
 
+                <div class="form-group">
 
+                    <label>
+                        Project Name
+                    </label>
 
-                event.target.matches(
-                    ".language-level"
-                )
-            {
+                    <input
+                        type="text"
+                        class="project-name"
+                        placeholder="e.g. AI CV Builder"
+                    >
 
-                updatePreview();
+                </div>
 
-                updateProgress();
+                <div class="form-group">
 
-            }
+                    <label>
+                        Technologies
+                    </label>
 
+                    <input
+                        type="text"
+                        class="project-technologies"
+                        placeholder="HTML, CSS, JavaScript, Node.js"
+                    >
 
-/* =========================================================
-   UPDATE LIVE PREVIEW
-========================================================= */
+                </div>
 
-function updatePreview() {
+                <div class="form-group full-width">
 
-    updateBasicPreview();
+                    <label>
+                        Project Description
+                    </label>
 
-    updateExperiencePreview();
+                    <textarea
+                        class="project-description"
+                        rows="5"
+                        placeholder="Describe your project..."
+                    ></textarea>
 
-    updateEducationPreview();
+                    <button
+                        type="button"
+                        class="ai-button"
+                        onclick="improveProject(this)"
+                    >
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Improve with AI
+                    </button>
 
-    updateSkillsPreview();
+                </div>
 
-    updateProjectsPreview();
+            </div>
+            `
+        );
 
-    updateCertificationsPreview();
+    container.appendChild(item);
 
-    updateLanguagesPreview();
+    projectCount++;
 
+    updateCounters();
+
+    debounceSave();
+
+    updateAllPreviews();
+
+    item.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
 }
 
 
 /* =========================================================
-   BASIC INFORMATION PREVIEW
+   CERTIFICATIONS
 ========================================================= */
 
-function updateBasicPreview() {
+function addCertification() {
 
-    const name =
-        getValue("name") ||
-        "Your Name";
+    const container =
+        getElement("certificationsContainer");
 
-
-    const jobTitle =
-        getValue("jobTitle") ||
-        "Professional Title";
-
-
-    const email =
-        getValue("email") ||
-        "email@example.com";
-
-
-    const phone =
-        getValue("phone") ||
-        "+92 300 0000000";
-
-
-    const country =
-        getValue("country");
-
-
-    const city =
-        getValue("city");
-
-
-    const address =
-        getValue("address");
-
-
-    const linkedin =
-        getValue("linkedin");
-
-
-    const github =
-        getValue("github");
-
-
-    setText(
-        "previewName",
-        name
-    );
-
-
-    setText(
-        "previewJobTitle",
-        jobTitle
-    );
-
-
-    setHTML(
-        "previewEmail",
-        `<i class="fa-solid fa-envelope"></i> ${escapeHTML(email)}`
-    );
-
-
-    setHTML(
-        "previewPhone",
-        `<i class="fa-solid fa-phone"></i> ${escapeHTML(phone)}`
-    );
-
-
-    let locationParts = [];
-
-
-    if (address) {
-
-        locationParts.push(address);
-
+    if (!container) {
+        return;
     }
 
+    const item =
+        createRepeatableItem(
+            "certification",
+            `
+            <div class="form-grid">
 
-    if (city) {
+                <div class="form-group">
 
-        locationParts.push(city);
+                    <label>
+                        Certification Name
+                    </label>
 
-    }
+                    <input
+                        type="text"
+                        class="certification-name"
+                        placeholder="e.g. Web Development"
+                    >
 
+                </div>
 
-    if (country) {
+                <div class="form-group">
 
-        locationParts.push(country);
+                    <label>
+                        Issuing Organization
+                    </label>
 
-    }
+                    <input
+                        type="text"
+                        class="certification-issuer"
+                        placeholder="Organization Name"
+                    >
 
+                </div>
 
-    const location =
-        locationParts.length
-            ? locationParts.join(", ")
-            : "Pakistan";
+                <div class="form-group">
 
+                    <label>
+                        Year
+                    </label>
 
-    setHTML(
-        "previewLocation",
-        `<i class="fa-solid fa-location-dot"></i> ${escapeHTML(location)}`
-    );
+                    <input
+                        type="number"
+                        class="certification-year"
+                        placeholder="2026"
+                        min="1950"
+                        max="2100"
+                    >
 
+                </div>
 
-    const linkedinElement =
-        document.getElementById(
-            "previewLinkedin"
+            </div>
+            `
         );
 
+    container.appendChild(item);
 
-    if (linkedinElement) {
+    certificationCount++;
 
-        if (linkedin) {
+    updateCounters();
 
-            linkedinElement.innerHTML = `
+    debounceSave();
 
-                <a
-                    href="${escapeHTML(linkedin)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <i class="fa-brands fa-linkedin"></i>
-                    LinkedIn
-                </a>
+    updateAllPreviews();
 
-            `;
+    item.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+}
 
-        } else {
 
-            linkedinElement.innerHTML =
-                `<i class="fa-brands fa-linkedin"></i> LinkedIn`;
+/* =========================================================
+   LANGUAGES
+========================================================= */
 
-        }
+function addLanguage() {
 
+    const container =
+        getElement("languagesContainer");
+
+    if (!container) {
+        return;
     }
 
+    const item =
+        createRepeatableItem(
+            "language",
+            `
+            <div class="form-grid">
 
-    const githubElement =
-        document.getElementById(
-            "previewGithub"
+                <div class="form-group">
+
+                    <label>
+                        Language
+                    </label>
+
+                    <input
+                        type="text"
+                        class="language-name"
+                        placeholder="e.g. English"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Proficiency
+                    </label>
+
+                    <select class="language-level">
+
+                        <option value="">
+                            Select Level
+                        </option>
+
+                        <option value="Native">
+                            Native
+                        </option>
+
+                        <option value="Fluent">
+                            Fluent
+                        </option>
+
+                        <option value="Advanced">
+                            Advanced
+                        </option>
+
+                        <option value="Intermediate">
+                            Intermediate
+                        </option>
+
+                        <option value="Basic">
+                            Basic
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+            `
         );
 
+    container.appendChild(item);
 
-    if (githubElement) {
+    languageCount++;
 
-        if (github) {
+    updateCounters();
 
-            githubElement.innerHTML = `
+    debounceSave();
 
-                <a
-                    href="${escapeHTML(github)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <i class="fa-brands fa-github"></i>
-                    GitHub
-                </a>
+    updateAllPreviews();
 
-            `;
+    item.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+}
 
-        } else {
 
-            githubElement.innerHTML =
-                `<i class="fa-brands fa-github"></i> GitHub`;
+/* =========================================================
+   COUNTERS
+========================================================= */
 
-        }
+function updateCounters() {
 
-    }
+    experienceCount =
+        $$(".experience-item").length;
 
+    educationCount =
+        $$(".education-item").length;
+
+    projectCount =
+        $$(".project-item").length;
+
+    certificationCount =
+        $$(".certification-item").length;
+
+    languageCount =
+        $$(".language-item").length;
+}
+
+
+/* =========================================================
+   MAIN PREVIEW UPDATE
+========================================================= */
+
+function updateAllPreviews() {
+
+    updatePersonalPreview();
 
     updateSummaryPreview();
 
+    updateExperiencePreview();
+
+    updateEducationPreview();
+
+    updateSkillsPreview();
+
+    updateProjectsPreview();
+
+    updateCertificationPreview();
+
+    updateLanguagesPreview();
+
+    updateTemplateClass();
+
+    renderPhoto(currentPhotoData);
+}
+
+
+/* =========================================================
+   PERSONAL PREVIEW
+========================================================= */
+
+function updatePersonalPreview() {
+
+    const name =
+        normalizeText(
+            getElement("name")?.value
+        );
+
+    const jobTitle =
+        normalizeText(
+            getElement("jobTitle")?.value
+        );
+
+    const email =
+        normalizeText(
+            getElement("email")?.value
+        );
+
+    const phone =
+        normalizeText(
+            getElement("phone")?.value
+        );
+
+    const country =
+        normalizeText(
+            getElement("country")?.value
+        );
+
+    const city =
+        normalizeText(
+            getElement("city")?.value
+        );
+
+    const linkedin =
+        normalizeText(
+            getElement("linkedin")?.value
+        );
+
+    const github =
+        normalizeText(
+            getElement("github")?.value
+        );
+
+
+    setPreviewText(
+        "previewName",
+        name || "Your Name"
+    );
+
+
+    setPreviewText(
+        "previewJobTitle",
+        jobTitle || "Professional Title"
+    );
+
+
+    const emailPreview =
+        getElement("previewEmail");
+
+    if (emailPreview) {
+
+        emailPreview.innerHTML = `
+            <i class="fa-solid fa-envelope"></i>
+            ${escapeHTML(
+                email ||
+                "email@example.com"
+            )}
+        `;
+    }
+
+
+    const phonePreview =
+        getElement("previewPhone");
+
+    if (phonePreview) {
+
+        phonePreview.innerHTML = `
+            <i class="fa-solid fa-phone"></i>
+            ${escapeHTML(
+                phone ||
+                "+92 300 0000000"
+            )}
+        `;
+    }
+
+
+    let locationText = "";
+
+    if (city && country) {
+        locationText =
+            `${city}, ${country}`;
+    } else if (country) {
+        locationText =
+            country;
+    } else {
+        locationText =
+            "Pakistan";
+    }
+
+
+    const locationPreview =
+        getElement("previewLocation");
+
+    if (locationPreview) {
+
+        locationPreview.innerHTML = `
+            <i class="fa-solid fa-location-dot"></i>
+            ${escapeHTML(locationText)}
+        `;
+    }
+
+
+    setPreviewText(
+        "previewLinkedin",
+        linkedin
+            ? "LinkedIn"
+            : ""
+    );
+
+
+    setPreviewText(
+        "previewGithub",
+        github
+            ? "GitHub"
+            : ""
+    );
+
+
+    setupPreviewLink(
+        "previewLinkedin",
+        linkedin
+    );
+
+    setupPreviewLink(
+        "previewGithub",
+        github
+    );
+}
+
+
+function setPreviewText(
+    id,
+    value
+) {
+
+    const element =
+        getElement(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        value;
+}
+
+
+function setupPreviewLink(
+    id,
+    url
+) {
+
+    const element =
+        getElement(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.removeAttribute("title");
+
+    if (!url) {
+
+        element.style.display =
+            "none";
+
+        element.removeAttribute(
+            "data-url"
+        );
+
+        return;
+    }
+
+    element.style.display =
+        "inline";
+
+    element.dataset.url =
+        url;
+
+    element.title =
+        url;
+
+    element.style.cursor =
+        "pointer";
+
+    element.onclick = () => {
+
+        const normalized =
+            normalizeURL(url);
+
+        if (normalized) {
+            window.open(
+                normalized,
+                "_blank",
+                "noopener,noreferrer"
+            );
+        }
+    };
+}
+
+
+function normalizeURL(url) {
+
+    let value =
+        normalizeText(url);
+
+    if (!value) {
+        return "";
+    }
+
+    if (
+        !/^https?:\/\//i.test(value)
+    ) {
+
+        value =
+            "https://" + value;
+    }
+
+    try {
+
+        const parsed =
+            new URL(value);
+
+        if (
+            parsed.protocol !== "http:" &&
+            parsed.protocol !== "https:"
+        ) {
+            return "";
+        }
+
+        return parsed.href;
+
+    } catch {
+
+        return "";
+    }
 }
 
 
@@ -1258,40 +2087,30 @@ function updateBasicPreview() {
 function updateSummaryPreview() {
 
     const summary =
-        getValue("summary");
-
+        normalizeText(
+            getElement("summary")?.value
+        );
 
     const section =
-        document.getElementById(
+        getElement(
             "previewSummarySection"
         );
 
+    const preview =
+        getElement("previewSummary");
 
-    const element =
-        document.getElementById(
-            "previewSummary"
-        );
-
-
-    if (!section || !element) return;
-
-
-    if (summary.trim()) {
-
-        section.style.display = "";
-
-        element.textContent =
-            summary.trim();
-
-    } else {
-
-        section.style.display = "";
-
-        element.textContent =
-            "Your professional summary will appear here.";
-
+    if (!section || !preview) {
+        return;
     }
 
+    preview.textContent =
+        summary ||
+        "Your professional summary will appear here.";
+
+    section.style.display =
+        summary
+            ? ""
+            : "";
 }
 
 
@@ -1302,170 +2121,121 @@ function updateSummaryPreview() {
 function updateExperiencePreview() {
 
     const container =
-        document.getElementById(
-            "previewExperience"
-        );
+        getElement("previewExperience");
 
-
-    const section =
-        document.getElementById(
-            "previewExperienceSection"
-        );
-
-
-    if (!container || !section) return;
-
+    if (!container) {
+        return;
+    }
 
     const items =
-        document.querySelectorAll(
-            ".experience-item"
-        );
+        $$(".experience-item");
 
+    const validItems =
+        items.filter(item => {
 
-    let html = "";
-
-
-    items.forEach(function (item) {
-
-        const title =
-            getElementValue(
-                item,
-                ".experience-job-title"
+            return (
+                normalizeText(
+                    $(".experience-job-title", item)?.value
+                ) ||
+                normalizeText(
+                    $(".experience-company", item)?.value
+                ) ||
+                normalizeText(
+                    $(".experience-start", item)?.value
+                ) ||
+                normalizeText(
+                    $(".experience-end", item)?.value
+                ) ||
+                normalizeText(
+                    $(".experience-description", item)?.value
+                )
             );
+        });
 
+    if (!validItems.length) {
 
-        const company =
-            getElementValue(
-                item,
-                ".experience-company"
-            );
+        container.innerHTML = `
+            <div class="preview-empty">
+                Work experience will appear here.
+            </div>
+        `;
 
+        return;
+    }
 
-        const start =
-            getElementValue(
-                item,
-                ".experience-start"
-            );
+    container.innerHTML =
+        validItems.map(item => {
 
+            const title =
+                normalizeText(
+                    $(".experience-job-title", item)?.value
+                );
 
-        const end =
-            getElementValue(
-                item,
-                ".experience-end"
-            );
+            const company =
+                normalizeText(
+                    $(".experience-company", item)?.value
+                );
 
+            const start =
+                formatMonth(
+                    $(".experience-start", item)?.value
+                );
 
-        const description =
-            getElementValue(
-                item,
-                ".experience-description"
-            );
+            const end =
+                formatMonth(
+                    $(".experience-end", item)?.value
+                );
 
+            const description =
+                normalizeText(
+                    $(".experience-description", item)?.value
+                );
 
-        if (
-            !title &&
-            !company &&
-            !start &&
-            !end &&
-            !description
-        ) {
+            const date =
+                buildDateRange(
+                    start,
+                    end
+                );
 
-            return;
+            return `
+                <article class="preview-item">
 
-        }
+                    <div class="preview-item-header">
 
+                        <div>
 
-        let dates = "";
+                            ${
+                                title
+                                    ? `<h4>${escapeHTML(title)}</h4>`
+                                    : ""
+                            }
 
+                            ${
+                                company
+                                    ? `<strong>${escapeHTML(company)}</strong>`
+                                    : ""
+                            }
 
-        if (start && end) {
-
-            dates =
-                `${formatMonth(start)} - ${formatMonth(end)}`;
-
-        } else if (start) {
-
-            dates =
-                `${formatMonth(start)} - Present`;
-
-        } else if (end) {
-
-            dates =
-                formatMonth(end);
-
-        }
-
-
-        let descriptionHTML = "";
-
-
-        if (description) {
-
-            descriptionHTML =
-                formatBulletText(description);
-
-        }
-
-
-        html += `
-
-            <div class="preview-item">
-
-                <div class="preview-item-header">
-
-                    <div>
-
-                        <h4>
-                            ${escapeHTML(title || "Job Title")}
-                        </h4>
+                        </div>
 
                         ${
-                            company
-                                ? `<span>${escapeHTML(company)}</span>`
+                            date
+                                ? `<span class="preview-date">${escapeHTML(date)}</span>`
                                 : ""
                         }
 
                     </div>
 
                     ${
-                        dates
-                            ? `<small>${escapeHTML(dates)}</small>`
+                        description
+                            ? `<p>${escapeHTML(description).replace(/\n/g, "<br>")}</p>`
                             : ""
                     }
 
-                </div>
+                </article>
+            `;
 
-                ${
-                    descriptionHTML
-                        ? `<div class="preview-description">
-                            ${descriptionHTML}
-                           </div>`
-                        : ""
-                }
-
-            </div>
-
-        `;
-
-    });
-
-
-    if (html) {
-
-        container.innerHTML = html;
-
-    } else {
-
-        container.innerHTML = `
-
-            <div class="preview-empty">
-                Work experience will appear here.
-            </div>
-
-        `;
-
-    }
-
+        }).join("");
 }
 
 
@@ -1476,159 +2246,121 @@ function updateExperiencePreview() {
 function updateEducationPreview() {
 
     const container =
-        document.getElementById(
-            "previewEducation"
-        );
+        getElement("previewEducation");
 
-
-    if (!container) return;
-
+    if (!container) {
+        return;
+    }
 
     const items =
-        document.querySelectorAll(
-            ".education-item"
-        );
+        $$(".education-item");
 
+    const validItems =
+        items.filter(item => {
 
-    let html = "";
-
-
-    items.forEach(function (item) {
-
-        const degree =
-            getElementValue(
-                item,
-                ".education-degree"
+            return (
+                normalizeText(
+                    $(".education-degree", item)?.value
+                ) ||
+                normalizeText(
+                    $(".education-institution", item)?.value
+                ) ||
+                normalizeText(
+                    $(".education-start", item)?.value
+                ) ||
+                normalizeText(
+                    $(".education-end", item)?.value
+                ) ||
+                normalizeText(
+                    $(".education-details", item)?.value
+                )
             );
+        });
 
+    if (!validItems.length) {
 
-        const institution =
-            getElementValue(
-                item,
-                ".education-institution"
-            );
+        container.innerHTML = `
+            <div class="preview-empty">
+                Education will appear here.
+            </div>
+        `;
 
+        return;
+    }
 
-        const start =
-            getElementValue(
-                item,
-                ".education-start"
-            );
+    container.innerHTML =
+        validItems.map(item => {
 
+            const degree =
+                normalizeText(
+                    $(".education-degree", item)?.value
+                );
 
-        const end =
-            getElementValue(
-                item,
-                ".education-end"
-            );
+            const institution =
+                normalizeText(
+                    $(".education-institution", item)?.value
+                );
 
+            const start =
+                normalizeText(
+                    $(".education-start", item)?.value
+                );
 
-        const details =
-            getElementValue(
-                item,
-                ".education-details"
-            );
+            const end =
+                normalizeText(
+                    $(".education-end", item)?.value
+                );
 
+            const details =
+                normalizeText(
+                    $(".education-details", item)?.value
+                );
 
-        if (
-            !degree &&
-            !institution &&
-            !start &&
-            !end &&
-            !details
-        ) {
+            const date =
+                buildDateRange(
+                    start,
+                    end
+                );
 
-            return;
+            return `
+                <article class="preview-item">
 
-        }
+                    <div class="preview-item-header">
 
+                        <div>
 
-        let years = "";
+                            ${
+                                degree
+                                    ? `<h4>${escapeHTML(degree)}</h4>`
+                                    : ""
+                            }
 
+                            ${
+                                institution
+                                    ? `<strong>${escapeHTML(institution)}</strong>`
+                                    : ""
+                            }
 
-        if (start && end) {
-
-            years =
-                `${start} - ${end}`;
-
-        } else if (start) {
-
-            years =
-                `${start} - Present`;
-
-        } else if (end) {
-
-            years = end;
-
-        }
-
-
-        html += `
-
-            <div class="preview-item">
-
-                <div class="preview-item-header">
-
-                    <div>
-
-                        <h4>
-                            ${escapeHTML(
-                                degree ||
-                                "Degree / Qualification"
-                            )}
-                        </h4>
+                        </div>
 
                         ${
-                            institution
-                                ? `<span>
-                                    ${escapeHTML(institution)}
-                                   </span>`
+                            date
+                                ? `<span class="preview-date">${escapeHTML(date)}</span>`
                                 : ""
                         }
 
                     </div>
 
                     ${
-                        years
-                            ? `<small>
-                                ${escapeHTML(years)}
-                               </small>`
+                        details
+                            ? `<p>${escapeHTML(details).replace(/\n/g, "<br>")}</p>`
                             : ""
                     }
 
-                </div>
+                </article>
+            `;
 
-                ${
-                    details
-                        ? `<p>
-                            ${escapeHTML(details)}
-                           </p>`
-                        : ""
-                }
-
-            </div>
-
-        `;
-
-    });
-
-
-    if (html) {
-
-        container.innerHTML = html;
-
-    } else {
-
-        container.innerHTML = `
-
-            <div class="preview-empty">
-                Education will appear here.
-            </div>
-
-        `;
-
-    }
-
+        }).join("");
 }
 
 
@@ -1639,50 +2371,44 @@ function updateEducationPreview() {
 function updateSkillsPreview() {
 
     const container =
-        document.getElementById(
-            "previewSkills"
-        );
+        getElement("previewSkills");
 
+    const input =
+        getElement("skills");
 
-    if (!container) return;
+    if (!container || !input) {
+        return;
+    }
 
-
-    const skillsText =
-        getValue("skills");
-
+    const raw =
+        safeText(input.value);
 
     const skills =
-        parseList(skillsText);
-
+        parseCommaSeparated(
+            raw
+        );
 
     if (!skills.length) {
 
         container.innerHTML = `
-
             <span class="skill-placeholder">
                 Skills will appear here.
             </span>
-
         `;
 
         return;
-
     }
 
-
     container.innerHTML =
-        skills.map(function (skill) {
+        skills.map(skill => {
 
             return `
-
                 <span class="skill-tag">
                     ${escapeHTML(skill)}
                 </span>
-
             `;
 
         }).join("");
-
 }
 
 
@@ -1693,1504 +2419,1748 @@ function updateSkillsPreview() {
 function updateProjectsPreview() {
 
     const container =
-        document.getElementById(
-            "previewProjects"
-        );
+        getElement("previewProjects");
 
-
-    if (!container) return;
-
+    if (!container) {
+        return;
+    }
 
     const items =
-        document.querySelectorAll(
-            ".project-item"
-        );
+        $$(".project-item");
 
+    const validItems =
+        items.filter(item => {
 
-    let html = "";
-
-
-    items.forEach(function (item) {
-
-        const name =
-            getElementValue(
-                item,
-                ".project-name"
+            return (
+                normalizeText(
+                    $(".project-name", item)?.value
+                ) ||
+                normalizeText(
+                    $(".project-technologies", item)?.value
+                ) ||
+                normalizeText(
+                    $(".project-description", item)?.value
+                )
             );
+        });
 
-
-        const technologies =
-            getElementValue(
-                item,
-                ".project-technologies"
-            );
-
-
-        const description =
-            getElementValue(
-                item,
-                ".project-description"
-            );
-
-
-        if (
-            !name &&
-            !technologies &&
-            !description
-        ) {
-
-            return;
-
-        }
-
-
-        html += `
-
-            <div class="preview-item">
-
-                <div class="preview-item-header">
-
-                    <div>
-
-                        <h4>
-                            ${escapeHTML(
-                                name ||
-                                "Project"
-                            )}
-                        </h4>
-
-                        ${
-                            technologies
-                                ? `<span>
-                                    ${escapeHTML(
-                                        technologies
-                                    )}
-                                   </span>`
-                                : ""
-                        }
-
-                    </div>
-
-                </div>
-
-                ${
-                    description
-                        ? `<div class="preview-description">
-                            ${formatBulletText(
-                                description
-                            )}
-                           </div>`
-                        : ""
-                }
-
-            </div>
-
-        `;
-
-    });
-
-
-    if (html) {
-
-        container.innerHTML = html;
-
-    } else {
+    if (!validItems.length) {
 
         container.innerHTML = `
-
             <div class="preview-empty">
                 Projects will appear here.
             </div>
-
         `;
 
+        return;
     }
 
-}
+    container.innerHTML =
+        validItems.map(item => {
 
+            const name =
+                normalizeText(
+                    $(".project-name", item)?.value
+                );
 
-/* =========================================================
-   CERTIFICATIONS PREVIEW
-========================================================= */
+            const technologies =
+                normalizeText(
+                    $(".project-technologies", item)?.value
+                );
 
-function updateCertificationsPreview() {
+            const description =
+                normalizeText(
+                    $(".project-description", item)?.value
+                );
 
-    const container =
-        document.getElementById(
-            "previewCertifications"
-        );
-
-
-    if (!container) return;
-
-
-    const items =
-        document.querySelectorAll(
-            ".certification-item"
-        );
-
-
-    let html = "";
-
-
-    items.forEach(function (item) {
-
-        const name =
-            getElementValue(
-                item,
-                ".certification-name"
-            );
-
-
-        const issuer =
-            getElementValue(
-                item,
-                ".certification-issuer"
-            );
-
-
-        const year =
-            getElementValue(
-                item,
-                ".certification-year"
-            );
-
-
-        if (
-            !name &&
-            !issuer &&
-            !year
-        ) {
-
-            return;
-
-        }
-
-
-        html += `
-
-            <div class="preview-item">
-
-                <div class="preview-item-header">
-
-                    <div>
-
-                        <h4>
-                            ${escapeHTML(
-                                name ||
-                                "Certification"
-                            )}
-                        </h4>
-
-                        ${
-                            issuer
-                                ? `<span>
-                                    ${escapeHTML(issuer)}
-                                   </span>`
-                                : ""
-                        }
-
-                    </div>
+            return `
+                <article class="preview-item">
 
                     ${
-                        year
-                            ? `<small>
-                                ${escapeHTML(year)}
-                               </small>`
+                        name
+                            ? `<h4>${escapeHTML(name)}</h4>`
                             : ""
                     }
 
-                </div>
+                    ${
+                        technologies
+                            ? `<div class="preview-technologies">
+                                ${escapeHTML(technologies)}
+                               </div>`
+                            : ""
+                    }
 
-            </div>
+                    ${
+                        description
+                            ? `<p>${escapeHTML(description).replace(/\n/g, "<br>")}</p>`
+                            : ""
+                    }
 
-        `;
+                </article>
+            `;
 
-    });
-
-
-    if (html) {
-
-        container.innerHTML = html;
-
-    } else {
-
-        container.innerHTML = `
-
-            <div class="preview-empty">
-                Certifications will appear here.
-            </div>
-
-        `;
-
-    }
-
+        }).join("");
 }
 
 
 /* =========================================================
-   LANGUAGES PREVIEW
+   CERTIFICATION PREVIEW
+========================================================= */
+
+function updateCertificationPreview() {
+
+    const container =
+        getElement(
+            "previewCertifications"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const items =
+        $$(".certification-item");
+
+    const validItems =
+        items.filter(item => {
+
+            return (
+                normalizeText(
+                    $(".certification-name", item)?.value
+                ) ||
+                normalizeText(
+                    $(".certification-issuer", item)?.value
+                ) ||
+                normalizeText(
+                    $(".certification-year", item)?.value
+                )
+            );
+        });
+
+    if (!validItems.length) {
+
+        container.innerHTML = `
+            <div class="preview-empty">
+                Certifications will appear here.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML =
+        validItems.map(item => {
+
+            const name =
+                normalizeText(
+                    $(".certification-name", item)?.value
+                );
+
+            const issuer =
+                normalizeText(
+                    $(".certification-issuer", item)?.value
+                );
+
+            const year =
+                normalizeText(
+                    $(".certification-year", item)?.value
+                );
+
+            return `
+                <article class="preview-item">
+
+                    ${
+                        name
+                            ? `<h4>${escapeHTML(name)}</h4>`
+                            : ""
+                    }
+
+                    ${
+                        issuer
+                            ? `<strong>${escapeHTML(issuer)}</strong>`
+                            : ""
+                    }
+
+                    ${
+                        year
+                            ? `<span class="preview-date">${escapeHTML(year)}</span>`
+                            : ""
+                    }
+
+                </article>
+            `;
+
+        }).join("");
+}
+
+
+/* =========================================================
+   LANGUAGE PREVIEW
 ========================================================= */
 
 function updateLanguagesPreview() {
 
     const container =
-        document.getElementById(
+        getElement(
             "previewLanguages"
         );
 
-
-    if (!container) return;
-
+    if (!container) {
+        return;
+    }
 
     const items =
-        document.querySelectorAll(
-            ".language-item"
-        );
+        $$(".language-item");
 
+    const validItems =
+        items.filter(item => {
 
-    let html = "";
-
-
-    items.forEach(function (item) {
-
-        const name =
-            getElementValue(
-                item,
-                ".language-name"
+            return (
+                normalizeText(
+                    $(".language-name", item)?.value
+                ) ||
+                normalizeText(
+                    $(".language-level", item)?.value
+                )
             );
+        });
 
-
-        const level =
-            getElementValue(
-                item,
-                ".language-level"
-            );
-
-
-        if (!name && !level) {
-
-            return;
-
-        }
-
-
-        html += `
-
-            <div class="preview-language">
-
-                <span>
-                    ${escapeHTML(
-                        name ||
-                        "Language"
-                    )}
-                </span>
-
-                ${
-                    level
-                        ? `<strong>
-                            ${escapeHTML(level)}
-                           </strong>`
-                        : ""
-                }
-
-            </div>
-
-        `;
-
-    });
-
-
-    if (html) {
-
-        container.innerHTML = html;
-
-    } else {
+    if (!validItems.length) {
 
         container.innerHTML = `
-
             <div class="preview-empty">
                 Languages will appear here.
             </div>
-
         `;
 
+        return;
     }
 
+    container.innerHTML =
+        validItems.map(item => {
+
+            const name =
+                normalizeText(
+                    $(".language-name", item)?.value
+                );
+
+            const level =
+                normalizeText(
+                    $(".language-level", item)?.value
+                );
+
+            return `
+                <article class="preview-item language-preview-item">
+
+                    ${
+                        name
+                            ? `<strong>${escapeHTML(name)}</strong>`
+                            : ""
+                    }
+
+                    ${
+                        level
+                            ? `<span>${escapeHTML(level)}</span>`
+                            : ""
+                    }
+
+                </article>
+            `;
+
+        }).join("");
 }
 
 
 /* =========================================================
-   COUNTRY + CITY
+   DATE HELPERS
 ========================================================= */
 
-function setupCountryCity() {
+function formatMonth(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(
+            `${value}-01T00:00:00`
+        );
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString(
+        "en-US",
+        {
+            month: "short",
+            year: "numeric"
+        }
+    );
+}
+
+
+function buildDateRange(
+    start,
+    end
+) {
+
+    if (start && end) {
+        return `${start} – ${end}`;
+    }
+
+    if (start) {
+        return `${start} – Present`;
+    }
+
+    if (end) {
+        return end;
+    }
+
+    return "";
+}
+
+
+/* =========================================================
+   SKILL PARSER
+========================================================= */
+
+function parseCommaSeparated(value) {
+
+    return value
+        .split(/[,;\n]+/)
+        .map(item => normalizeText(item))
+        .filter(Boolean)
+        .filter(
+            (item, index, array) =>
+                array.indexOf(item) === index
+        );
+}
+
+
+/* =========================================================
+   TEMPLATE SYSTEM
+========================================================= */
+
+function openTemplates() {
+
+    const modal =
+        getElement("templateModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "flex";
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
+
+
+function closeTemplates() {
+
+    const modal =
+        getElement("templateModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "none";
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+function changeTemplate(templateNumber) {
+
+    const number =
+        Number(templateNumber);
+
+    if (
+        !Number.isInteger(number) ||
+        number < 1 ||
+        number > 4
+    ) {
+        return;
+    }
+
+    currentTemplate =
+        number;
+
+    updateTemplateClass();
+
+    closeTemplates();
+
+    debounceSave();
+
+    showToast(
+        `Template ${number} selected.`
+    );
+}
+
+
+function updateTemplateClass() {
+
+    const preview =
+        getElement("cvPreview");
+
+    if (!preview) {
+        return;
+    }
+
+    preview.classList.remove(
+        "template-1",
+        "template-2",
+        "template-3",
+        "template-4"
+    );
+
+    preview.classList.add(
+        `template-${currentTemplate}`
+    );
+}
+
+
+/* =========================================================
+   ANALYSIS MODAL
+========================================================= */
+
+function openAnalysis() {
+
+    const modal =
+        getElement("analysisModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "flex";
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
+
+
+function closeAnalysis() {
+
+    const modal =
+        getElement("analysisModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "none";
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+/* =========================================================
+   MODAL EVENTS
+========================================================= */
+
+function setupModalBehavior() {
+
+    const templateModal =
+        getElement("templateModal");
+
+    const analysisModal =
+        getElement("analysisModal");
+
+
+    if (templateModal) {
+
+        templateModal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    templateModal
+                ) {
+                    closeTemplates();
+                }
+            }
+        );
+    }
+
+
+    if (analysisModal) {
+
+        analysisModal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    analysisModal
+                ) {
+                    closeAnalysis();
+                }
+            }
+        );
+    }
+}
+
+
+function setupGlobalKeyboardEvents() {
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            closeTemplates();
+
+            closeAnalysis();
+        }
+    );
+}
+
+
+/* =========================================================
+   CLEAR CV
+========================================================= */
+
+function clearCV(event) {
+
+    if (
+        event &&
+        typeof event.preventDefault ===
+        "function"
+    ) {
+        event.preventDefault();
+    }
+
+    const confirmed =
+        window.confirm(
+            "Are you sure you want to clear your CV?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    isRestoringData = true;
+
+    const basicFields = [
+        "name",
+        "email",
+        "phone",
+        "dateOfBirth",
+        "address",
+        "linkedin",
+        "github",
+        "jobTitle",
+        "summary",
+        "skills",
+        "location",
+        "careerField"
+    ];
+
+    basicFields.forEach(id => {
+
+        const field =
+            getElement(id);
+
+        if (field) {
+            field.value = "";
+        }
+    });
+
 
     const country =
-        document.getElementById(
-            "country"
+        getElement("country");
+
+    if (country) {
+        country.value = "";
+    }
+
+
+    updateCityOptions("");
+
+
+    const containers = [
+        "experienceContainer",
+        "educationContainer",
+        "projectsContainer",
+        "certificationsContainer",
+        "languagesContainer"
+    ];
+
+
+    containers.forEach(id => {
+
+        const container =
+            getElement(id);
+
+        if (!container) {
+            return;
+        }
+
+        const items =
+            $$(".repeatable-item", container);
+
+        items.forEach(
+            (item, index) => {
+
+                if (index === 0) {
+
+                    clearRepeatableItem(
+                        item
+                    );
+
+                } else {
+
+                    item.remove();
+                }
+            }
+        );
+    });
+
+
+    currentPhotoData = "";
+
+    const photoInput =
+        getElement("profilePhoto");
+
+    if (photoInput) {
+        photoInput.value = "";
+    }
+
+
+    currentTemplate = 1;
+
+
+    const careerRolesContainer =
+        getElement("careerRoleOptions");
+
+    if (careerRolesContainer) {
+
+        careerRolesContainer.innerHTML = `
+            <div class="career-role-placeholder">
+                Select a career field to see recommended job roles.
+            </div>
+        `;
+    }
+
+
+    const guide =
+        getElement("aiGuideContent");
+
+    if (guide) {
+
+        guide.textContent =
+            "Select a career field to receive AI-powered career guidance.";
+    }
+
+
+    isRestoringData = false;
+
+
+    updateCounters();
+
+    updateAllPreviews();
+
+    saveCVData();
+
+    renderPhoto("");
+
+    showToast(
+        "Your CV has been cleared."
+    );
+}
+
+
+/* =========================================================
+   LOCAL STORAGE
+========================================================= */
+
+function collectCVData() {
+
+    return {
+
+        version: 1,
+
+        personal: {
+
+            name:
+                getElement("name")?.value || "",
+
+            email:
+                getElement("email")?.value || "",
+
+            phone:
+                getElement("phone")?.value || "",
+
+            dateOfBirth:
+                getElement("dateOfBirth")?.value || "",
+
+            country:
+                getElement("country")?.value || "",
+
+            city:
+                getElement("city")?.value || "",
+
+            location:
+                getElement("location")?.value || "",
+
+            address:
+                getElement("address")?.value || "",
+
+            linkedin:
+                getElement("linkedin")?.value || "",
+
+            github:
+                getElement("github")?.value || ""
+        },
+
+        career: {
+
+            field:
+                getElement("careerField")?.value || "",
+
+            jobTitle:
+                getElement("jobTitle")?.value || ""
+        },
+
+        summary:
+            getElement("summary")?.value || "",
+
+        skills:
+            getElement("skills")?.value || "",
+
+        experience:
+            collectExperience(),
+
+        education:
+            collectEducation(),
+
+        projects:
+            collectProjects(),
+
+        certifications:
+            collectCertifications(),
+
+        languages:
+            collectLanguages(),
+
+        photo:
+            currentPhotoData || "",
+
+        template:
+            currentTemplate
+    };
+}
+
+
+function collectExperience() {
+
+    return $$(".experience-item")
+        .map(item => ({
+
+            jobTitle:
+                $(".experience-job-title", item)?.value || "",
+
+            company:
+                $(".experience-company", item)?.value || "",
+
+            start:
+                $(".experience-start", item)?.value || "",
+
+            end:
+                $(".experience-end", item)?.value || "",
+
+            description:
+                $(".experience-description", item)?.value || ""
+        }));
+}
+
+
+function collectEducation() {
+
+    return $$(".education-item")
+        .map(item => ({
+
+            degree:
+                $(".education-degree", item)?.value || "",
+
+            institution:
+                $(".education-institution", item)?.value || "",
+
+            start:
+                $(".education-start", item)?.value || "",
+
+            end:
+                $(".education-end", item)?.value || "",
+
+            details:
+                $(".education-details", item)?.value || ""
+        }));
+}
+
+
+function collectProjects() {
+
+    return $$(".project-item")
+        .map(item => ({
+
+            name:
+                $(".project-name", item)?.value || "",
+
+            technologies:
+                $(".project-technologies", item)?.value || "",
+
+            description:
+                $(".project-description", item)?.value || ""
+        }));
+}
+
+
+function collectCertifications() {
+
+    return $$(".certification-item")
+        .map(item => ({
+
+            name:
+                $(".certification-name", item)?.value || "",
+
+            issuer:
+                $(".certification-issuer", item)?.value || "",
+
+            year:
+                $(".certification-year", item)?.value || ""
+        }));
+}
+
+
+function collectLanguages() {
+
+    return $$(".language-item")
+        .map(item => ({
+
+            name:
+                $(".language-name", item)?.value || "",
+
+            level:
+                $(".language-level", item)?.value || ""
+        }));
+}
+
+
+function saveCVData() {
+
+    if (isRestoringData) {
+        return;
+    }
+
+    try {
+
+        const data =
+            collectCVData();
+
+        localStorage.setItem(
+            APP_CONFIG.storageKey,
+            JSON.stringify(data)
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Unable to save CV data:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   RESTORE LOCAL DATA
+========================================================= */
+
+function restoreCVData() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                APP_CONFIG.storageKey
+            );
+
+        if (!raw) {
+            return;
+        }
+
+        const data =
+            JSON.parse(raw);
+
+        if (!data || typeof data !== "object") {
+            return;
+        }
+
+        isRestoringData = true;
+
+
+        restorePersonalData(
+            data.personal || {}
         );
 
 
-    const city =
-        document.getElementById(
-            "city"
+        restoreCareerData(
+            data.career || {}
         );
 
 
-    if (!country || !city) return;
+        const summary =
+            getElement("summary");
+
+        if (summary) {
+            summary.value =
+                data.summary || "";
+        }
 
 
-    const cities = {
+        const skills =
+            getElement("skills");
 
-        Pakistan: [
-            "Karachi",
-            "Lahore",
-            "Islamabad",
-            "Rawalpindi",
-            "Faisalabad",
-            "Multan",
-            "Peshawar",
-            "Quetta",
-            "Hyderabad"
-        ],
+        if (skills) {
+            skills.value =
+                data.skills || "";
+        }
 
-        India: [
-            "Mumbai",
-            "Delhi",
-            "Bangalore",
-            "Hyderabad",
-            "Chennai",
-            "Kolkata"
-        ],
 
-        "United Arab Emirates": [
-            "Dubai",
-            "Abu Dhabi",
-            "Sharjah",
-            "Ajman"
-        ],
+        restoreExperience(
+            data.experience || []
+        );
 
-        "Saudi Arabia": [
-            "Riyadh",
-            "Jeddah",
-            "Dammam",
-            "Mecca",
-            "Medina"
-        ],
+        restoreEducation(
+            data.education || []
+        );
 
-        "United Kingdom": [
-            "London",
-            "Manchester",
-            "Birmingham",
-            "Liverpool"
-        ],
+        restoreProjects(
+            data.projects || []
+        );
 
-        "United States": [
-            "New York",
-            "Los Angeles",
-            "Chicago",
-            "Houston",
-            "San Francisco"
-        ],
+        restoreCertifications(
+            data.certifications || []
+        );
 
-        Canada: [
-            "Toronto",
-            "Vancouver",
-            "Montreal",
-            "Calgary"
-        ],
+        restoreLanguages(
+            data.languages || []
+        );
 
-        Australia: [
-            "Sydney",
-            "Melbourne",
-            "Brisbane",
-            "Perth"
-        ],
 
-        Germany: [
-            "Berlin",
-            "Munich",
-            "Hamburg",
-            "Frankfurt"
-        ]
+        currentPhotoData =
+            data.photo || "";
 
+
+        currentTemplate =
+            Number(data.template) || 1;
+
+
+        isRestoringData = false;
+
+
+        updateAllPreviews();
+
+        updateCounters();
+
+        showToast(
+            "Your saved CV has been restored."
+        );
+
+    } catch (error) {
+
+        isRestoringData = false;
+
+        console.warn(
+            "Unable to restore CV data:",
+            error
+        );
+    }
+}
+
+
+function restorePersonalData(data) {
+
+    const fields = {
+
+        name: data.name,
+
+        email: data.email,
+
+        phone: data.phone,
+
+        dateOfBirth: data.dateOfBirth,
+
+        address: data.address,
+
+        linkedin: data.linkedin,
+
+        github: data.github
     };
 
 
-    country.addEventListener(
-        "change",
-        function () {
+    Object.entries(fields)
+        .forEach(
+            ([id, value]) => {
 
-            const selected =
-                this.value;
+                const field =
+                    getElement(id);
 
-
-            city.innerHTML = "";
-
-
-            if (
-                !selected ||
-                !cities[selected]
-            ) {
-
-                city.disabled = true;
-
-
-                city.innerHTML = `
-
-                    <option value="">
-                        Select country first
-                    </option>
-
-                `;
-
-                updatePreview();
-
-                return;
-
-            }
-
-
-            city.disabled = false;
-
-
-            city.innerHTML = `
-
-                <option value="">
-                    Select City
-                </option>
-
-            `;
-
-
-            cities[selected].forEach(
-                function (cityName) {
-
-                    const option =
-                        document.createElement(
-                            "option"
-                        );
-
-
-                    option.value =
-                        cityName;
-
-
-                    option.textContent =
-                        cityName;
-
-
-                    city.appendChild(option);
-
+                if (field) {
+                    field.value =
+                        value || "";
                 }
-            );
-
-
-            updatePreview();
-
-            updateProgress();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   PROFILE PHOTO
-========================================================= */
-
-function setupProfilePhoto() {
-
-    const input =
-        document.getElementById(
-            "profilePhoto"
-        );
-
-
-    const photoPreview =
-        document.getElementById(
-            "photoPreview"
-        );
-
-
-    const previewPhoto =
-        document.getElementById(
-            "previewPhoto"
-        );
-
-
-    const defaultIcon =
-        document.getElementById(
-            "defaultPhotoIcon"
-        );
-
-
-    if (!input) return;
-
-
-    input.addEventListener(
-        "change",
-        function () {
-
-            const file =
-                this.files &&
-                this.files[0];
-
-
-            if (!file) return;
-
-
-            if (
-                !file.type.startsWith(
-                    "image/"
-                )
-            ) {
-
-                showToast(
-                    "Please select an image file.",
-                    "error"
-                );
-
-                this.value = "";
-
-                return;
-
-            }
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                function (event) {
-
-                    const imageURL =
-                        event.target.result;
-
-
-                    if (photoPreview) {
-
-                        photoPreview.innerHTML = `
-
-                            <img
-                                src="${imageURL}"
-                                alt="Profile Photo"
-                            >
-
-                        `;
-
-                    }
-
-
-                    if (previewPhoto) {
-
-                        previewPhoto.src =
-                            imageURL;
-
-                        previewPhoto.style.display =
-                            "block";
-
-                    }
-
-
-                    if (defaultIcon) {
-
-                        defaultIcon.style.display =
-                            "none";
-
-                    }
-
-
-                    updateProgress();
-
-
-                    showToast(
-                        "Profile photo added.",
-                        "success"
-                    );
-
-                };
-
-
-            reader.readAsDataURL(file);
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   INPUT FORMATTING
-========================================================= */
-
-function setupInputFormatting() {
-
-    const phone =
-        document.getElementById(
-            "phone"
-        );
-
-
-    if (phone) {
-
-        phone.addEventListener(
-            "input",
-            function () {
-
-                this.value =
-                    this.value.replace(
-                        /[^0-9+() -]/g,
-                        ""
-                    );
-
             }
         );
 
+
+    const country =
+        getElement("country");
+
+    if (country) {
+
+        country.value =
+            data.country || "";
+
+        updateCityOptions(
+            country.value,
+            data.city || ""
+        );
     }
 
+
+    updateLocation();
+}
+
+
+function restoreCareerData(data) {
+
+    const field =
+        getElement("careerField");
+
+    const title =
+        getElement("jobTitle");
+
+    if (field) {
+
+        field.value =
+            data.field || "";
+
+        updateCareerRoles(
+            field.value
+        );
+
+        updateCareerGuide(
+            field.value
+        );
+    }
+
+    if (title) {
+        title.value =
+            data.jobTitle || "";
+    }
 }
 
 
 /* =========================================================
-   ADD EXPERIENCE
+   RESTORE EXPERIENCE
 ========================================================= */
 
-function addExperience() {
+function restoreExperience(items) {
 
     const container =
-        document.getElementById(
-            "experienceContainer"
+        getElement("experienceContainer");
+
+    if (!container) {
+        return;
+    }
+
+    resetContainer(
+        container,
+        ".experience-item"
+    );
+
+
+    const first =
+        $(".experience-item", container);
+
+    if (items.length === 0) {
+
+        clearRepeatableItem(first);
+
+        return;
+    }
+
+
+    applyExperience(
+        first,
+        items[0]
+    );
+
+
+    items
+        .slice(1)
+        .forEach(itemData => {
+
+            addExperience();
+
+            const all =
+                $$(".experience-item", container);
+
+            applyExperience(
+                all[all.length - 1],
+                itemData
+            );
+        });
+}
+
+
+function applyExperience(
+    item,
+    data
+) {
+
+    if (!item || !data) {
+        return;
+    }
+
+    const fields = {
+
+        ".experience-job-title":
+            data.jobTitle,
+
+        ".experience-company":
+            data.company,
+
+        ".experience-start":
+            data.start,
+
+        ".experience-end":
+            data.end,
+
+        ".experience-description":
+            data.description
+    };
+
+
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
+
+                const field =
+                    $(selector, item);
+
+                if (field) {
+                    field.value =
+                        value || "";
+                }
+            }
         );
-
-
-    if (!container) return;
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "repeatable-item experience-item";
-
-
-    item.innerHTML = `
-
-        <div class="repeatable-item-header">
-
-            <h3>
-                Additional Experience
-            </h3>
-
-            <button
-                type="button"
-                class="remove-button"
-                onclick="removeItem(this)"
-            >
-                <i class="fa-solid fa-trash"></i>
-                Remove
-            </button>
-
-        </div>
-
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Job Title
-                </label>
-
-                <input
-                    type="text"
-                    class="experience-job-title"
-                    placeholder="e.g. Frontend Developer"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Company
-                </label>
-
-                <input
-                    type="text"
-                    class="experience-company"
-                    placeholder="Company Name"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Start Date
-                </label>
-
-                <input
-                    type="month"
-                    class="experience-start"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    End Date
-                </label>
-
-                <input
-                    type="month"
-                    class="experience-end"
-                >
-
-            </div>
-
-
-            <div class="form-group full-width">
-
-                <label>
-                    Description
-                </label>
-
-                <textarea
-                    class="experience-description"
-                    rows="5"
-                    placeholder="Describe your responsibilities..."
-                ></textarea>
-
-
-                <button
-                    type="button"
-                    class="ai-button"
-                    onclick="improveExperience(this)"
-                >
-
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-
-                    Improve with AI
-
-                </button>
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    updatePreview();
-
-    updateProgress();
-
 }
 
 
 /* =========================================================
-   ADD EDUCATION
+   RESTORE EDUCATION
 ========================================================= */
 
-function addEducation() {
+function restoreEducation(items) {
 
     const container =
-        document.getElementById(
-            "educationContainer"
-        );
+        getElement("educationContainer");
+
+    if (!container) {
+        return;
+    }
+
+    resetContainer(
+        container,
+        ".education-item"
+    );
 
 
-    if (!container) return;
+    const first =
+        $(".education-item", container);
+
+    if (!items.length) {
+
+        clearRepeatableItem(first);
+
+        return;
+    }
 
 
-    const item =
-        document.createElement(
-            "div"
-        );
+    applyEducation(
+        first,
+        items[0]
+    );
 
 
-    item.className =
-        "repeatable-item education-item";
+    items
+        .slice(1)
+        .forEach(itemData => {
 
+            addEducation();
 
-    item.innerHTML = `
+            const all =
+                $$(".education-item", container);
 
-        <div class="repeatable-item-header">
-
-            <h3>
-                Additional Education
-            </h3>
-
-            <button
-                type="button"
-                class="remove-button"
-                onclick="removeItem(this)"
-            >
-                <i class="fa-solid fa-trash"></i>
-                Remove
-            </button>
-
-        </div>
-
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Degree / Qualification
-                </label>
-
-                <input
-                    type="text"
-                    class="education-degree"
-                    placeholder="e.g. Bachelor's in Computer Science"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Institution
-                </label>
-
-                <input
-                    type="text"
-                    class="education-institution"
-                    placeholder="University / College"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Start Year
-                </label>
-
-                <input
-                    type="number"
-                    class="education-start"
-                    placeholder="2022"
-                    min="1950"
-                    max="2100"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    End Year
-                </label>
-
-                <input
-                    type="number"
-                    class="education-end"
-                    placeholder="2026"
-                    min="1950"
-                    max="2100"
-                >
-
-            </div>
-
-
-            <div class="form-group full-width">
-
-                <label>
-                    Details
-                </label>
-
-                <textarea
-                    class="education-details"
-                    rows="3"
-                    placeholder="Add relevant details..."
-                ></textarea>
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    updatePreview();
-
-    updateProgress();
-
+            applyEducation(
+                all[all.length - 1],
+                itemData
+            );
+        });
 }
 
 
-// PART 3
+function applyEducation(
+    item,
+    data
+) {
+
+    if (!item || !data) {
+        return;
+    }
+
+    const fields = {
+
+        ".education-degree":
+            data.degree,
+
+        ".education-institution":
+            data.institution,
+
+        ".education-start":
+            data.start,
+
+        ".education-end":
+            data.end,
+
+        ".education-details":
+            data.details
+    };
 
 
-    container.appendChild(item);
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
 
+                const field =
+                    $(selector, item);
 
-    updatePreview();
-
-    updateProgress();
-
-
-
-
-/* =========================================================
-   ADD PROJECT
-========================================================= */
-
-function addProject() {
-
-    const container =
-        document.getElementById(
-            "projectsContainer"
+                if (field) {
+                    field.value =
+                        value || "";
+                }
+            }
         );
-
-
-    if (!container) return;
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "repeatable-item project-item";
-
-
-    item.innerHTML = `
-
-        <div class="repeatable-item-header">
-
-            <h3>
-                Additional Project
-            </h3>
-
-            <button
-                type="button"
-                class="remove-button"
-                onclick="removeItem(this)"
-            >
-                <i class="fa-solid fa-trash"></i>
-                Remove
-            </button>
-
-        </div>
-
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Project Name
-                </label>
-
-                <input
-                    type="text"
-                    class="project-name"
-                    placeholder="e.g. AI CV Builder"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Technologies
-                </label>
-
-                <input
-                    type="text"
-                    class="project-technologies"
-                    placeholder="HTML, CSS, JavaScript, Node.js"
-                >
-
-            </div>
-
-
-            <div class="form-group full-width">
-
-                <label>
-                    Project Description
-                </label>
-
-                <textarea
-                    class="project-description"
-                    rows="5"
-                    placeholder="Describe your project..."
-                ></textarea>
-
-
-                <button
-                    type="button"
-                    class="ai-button"
-                    onclick="improveProject(this)"
-                >
-
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-
-                    Improve with AI
-
-                </button>
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    updatePreview();
-
-    updateProgress();
-
 }
 
 
 /* =========================================================
-   ADD CERTIFICATION
+   RESTORE PROJECTS
 ========================================================= */
 
-function addCertification() {
+function restoreProjects(items) {
 
     const container =
-        document.getElementById(
+        getElement("projectsContainer");
+
+    if (!container) {
+        return;
+    }
+
+    resetContainer(
+        container,
+        ".project-item"
+    );
+
+
+    const first =
+        $(".project-item", container);
+
+    if (!items.length) {
+
+        clearRepeatableItem(first);
+
+        return;
+    }
+
+
+    applyProject(
+        first,
+        items[0]
+    );
+
+
+    items
+        .slice(1)
+        .forEach(itemData => {
+
+            addProject();
+
+            const all =
+                $$(".project-item", container);
+
+            applyProject(
+                all[all.length - 1],
+                itemData
+            );
+        });
+}
+
+
+function applyProject(
+    item,
+    data
+) {
+
+    if (!item || !data) {
+        return;
+    }
+
+    const fields = {
+
+        ".project-name":
+            data.name,
+
+        ".project-technologies":
+            data.technologies,
+
+        ".project-description":
+            data.description
+    };
+
+
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
+
+                const field =
+                    $(selector, item);
+
+                if (field) {
+                    field.value =
+                        value || "";
+                }
+            }
+        );
+}
+
+
+/* =========================================================
+   RESTORE CERTIFICATIONS
+========================================================= */
+
+function restoreCertifications(items) {
+
+    const container =
+        getElement(
             "certificationsContainer"
         );
 
+    if (!container) {
+        return;
+    }
 
-    if (!container) return;
+    resetContainer(
+        container,
+        ".certification-item"
+    );
 
 
-    const item =
-        document.createElement(
-            "div"
+    const first =
+        $(".certification-item", container);
+
+    if (!items.length) {
+
+        clearRepeatableItem(first);
+
+        return;
+    }
+
+
+    applyCertification(
+        first,
+        items[0]
+    );
+
+
+    items
+        .slice(1)
+        .forEach(itemData => {
+
+            addCertification();
+
+            const all =
+                $$(".certification-item", container);
+
+            applyCertification(
+                all[all.length - 1],
+                itemData
+            );
+        });
+}
+
+
+function applyCertification(
+    item,
+    data
+) {
+
+    if (!item || !data) {
+        return;
+    }
+
+    const fields = {
+
+        ".certification-name":
+            data.name,
+
+        ".certification-issuer":
+            data.issuer,
+
+        ".certification-year":
+            data.year
+    };
+
+
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
+
+                const field =
+                    $(selector, item);
+
+                if (field) {
+                    field.value =
+                        value || "";
+                }
+            }
         );
-
-
-    item.className =
-        "repeatable-item certification-item";
-
-
-    item.innerHTML = `
-
-        <div class="repeatable-item-header">
-
-            <h3>
-                Additional Certification
-            </h3>
-
-            <button
-                type="button"
-                class="remove-button"
-                onclick="removeItem(this)"
-            >
-                <i class="fa-solid fa-trash"></i>
-                Remove
-            </button>
-
-        </div>
-
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Certification Name
-                </label>
-
-                <input
-                    type="text"
-                    class="certification-name"
-                    placeholder="e.g. Web Development"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Issuing Organization
-                </label>
-
-                <input
-                    type="text"
-                    class="certification-issuer"
-                    placeholder="Organization Name"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Year
-                </label>
-
-                <input
-                    type="number"
-                    class="certification-year"
-                    placeholder="2026"
-                    min="1950"
-                    max="2100"
-                >
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    updatePreview();
-
-    updateProgress();
-
 }
 
 
 /* =========================================================
-   ADD LANGUAGE
+   RESTORE LANGUAGES
 ========================================================= */
 
-function addLanguage() {
+function restoreLanguages(items) {
 
     const container =
-        document.getElementById(
+        getElement(
             "languagesContainer"
         );
 
+    if (!container) {
+        return;
+    }
 
-    if (!container) return;
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "repeatable-item language-item";
-
-
-    item.innerHTML = `
-
-        <div class="repeatable-item-header">
-
-            <h3>
-                Additional Language
-            </h3>
-
-            <button
-                type="button"
-                class="remove-button"
-                onclick="removeItem(this)"
-            >
-                <i class="fa-solid fa-trash"></i>
-                Remove
-            </button>
-
-        </div>
-
-
-        <div class="form-grid">
-
-
-            <div class="form-group">
-
-                <label>
-                    Language
-                </label>
-
-                <input
-                    type="text"
-                    class="language-name"
-                    placeholder="e.g. English"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Proficiency
-                </label>
-
-
-                <select class="language-level">
-
-                    <option value="">
-                        Select Level
-                    </option>
-
-                    <option value="Native">
-                        Native
-                    </option>
-
-                    <option value="Fluent">
-                        Fluent
-                    </option>
-
-                    <option value="Advanced">
-                        Advanced
-                    </option>
-
-                    <option value="Intermediate">
-                        Intermediate
-                    </option>
-
-                    <option value="Basic">
-                        Basic
-                    </option>
-
-                </select>
-
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    updatePreview();
-
-    updateProgress();
-
-}
-
-
-/* =========================================================
-   REMOVE REPEATABLE ITEM
-========================================================= */
-
-function removeItem(button) {
-
-    if (!button) return;
-
-
-    const item =
-        button.closest(
-            ".repeatable-item"
-        );
-
-
-    if (!item) return;
-
-
-    item.remove();
-
-
-    updatePreview();
-
-    updateProgress();
-
-    showToast(
-        "Item removed.",
-        "success"
+    resetContainer(
+        container,
+        ".language-item"
     );
 
+
+    const first =
+        $(".language-item", container);
+
+    if (!items.length) {
+
+        clearRepeatableItem(first);
+
+        return;
+    }
+
+
+    applyLanguage(
+        first,
+        items[0]
+    );
+
+
+    items
+        .slice(1)
+        .forEach(itemData => {
+
+            addLanguage();
+
+            const all =
+                $$(".language-item", container);
+
+            applyLanguage(
+                all[all.length - 1],
+                itemData
+            );
+        });
+}
+
+
+function applyLanguage(
+    item,
+    data
+) {
+
+    if (!item || !data) {
+        return;
+    }
+
+    const name =
+        $(".language-name", item);
+
+    const level =
+        $(".language-level", item);
+
+    if (name) {
+        name.value =
+            data.name || "";
+    }
+
+    if (level) {
+        level.value =
+            data.level || "";
+    }
 }
 
 
 /* =========================================================
-   AI - GENERATE SUMMARY
+   RESET CONTAINER
+========================================================= */
+
+function resetContainer(
+    container,
+    selector
+) {
+
+    const items =
+        $$(selector, container);
+
+    items.forEach(
+        (item, index) => {
+
+            if (index > 0) {
+                item.remove();
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   AI API HELPER
+========================================================= */
+
+async function callAI(
+    endpoint,
+    payload
+) {
+
+    const response =
+        await fetch(
+            `${APP_CONFIG.apiBase}${endpoint}`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify(payload)
+            }
+        );
+
+
+    let data = null;
+
+    try {
+        data =
+            await response.json();
+    } catch {
+        data = null;
+    }
+
+
+    if (!response.ok) {
+
+        const message =
+            data?.message ||
+            data?.error ||
+            `Request failed with status ${response.status}.`;
+
+        throw new Error(message);
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
+   AI RESPONSE TEXT EXTRACTOR
+========================================================= */
+
+function extractAIText(data) {
+
+    if (!data) {
+        return "";
+    }
+
+    if (typeof data === "string") {
+        return data;
+    }
+
+    return (
+        data.text ||
+        data.result ||
+        data.content ||
+        data.summary ||
+        data.message ||
+        ""
+    );
+}
+
+
+/* =========================================================
+   GENERATE SUMMARY WITH AI
 ========================================================= */
 
 async function generateSummary() {
 
     const button =
-        event?.currentTarget;
-
-
-    const name =
-        getValue("name");
-
-
-    const jobTitle =
-        getValue("jobTitle");
-
-
-    const skills =
-        getValue("skills");
-
-
-    const education =
-        collectEducationText();
-
-
-    const experience =
-        collectExperienceText();
-
-
-    if (
-        !name &&
-        !jobTitle &&
-        !skills &&
-        !experience &&
-        !education
-    ) {
-
-        showToast(
-            "Please enter some CV information first.",
-            "error"
+        event?.currentTarget ||
+        document.querySelector(
+            ".ai-button"
         );
 
-        return;
+    const summary =
+        getElement("summary");
 
+    if (!summary) {
+        return;
     }
 
 
-    setButtonLoading(
-        button,
-        true,
-        "Generating..."
-    );
+    const data =
+        collectCVData();
+
+
+    if (
+        !data.personal.name &&
+        !data.career.jobTitle &&
+        !data.career.field
+    ) {
+
+        showToast(
+            "Enter your name or professional title first.",
+            "warning"
+        );
+
+        return;
+    }
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/generate-summary`,
+        setButtonLoading(
+            button,
+            true,
+            "Generating..."
+        );
+
+
+        const result =
+            await callAI(
+                "/generate-summary",
                 {
-                    method: "POST",
+                    name:
+                        data.personal.name,
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                    careerField:
+                        data.career.field,
 
-                    body: JSON.stringify({
+                    jobTitle:
+                        data.career.jobTitle,
 
-                        name,
+                    skills:
+                        data.skills,
 
-                        jobTitle,
+                    experience:
+                        data.experience,
 
-                        skills,
+                    education:
+                        data.education,
 
-                        experience,
-
-                        education
-
-                    })
-
+                    projects:
+                        data.projects
                 }
             );
 
 
-        const data =
-            await response.json();
+        const text =
+            extractAIText(result);
 
 
-        if (!response.ok || !data.success) {
-
+        if (!text) {
             throw new Error(
-                data.message ||
-                "Failed to generate summary."
+                "AI returned an empty response."
             );
-
         }
 
 
-        const summary =
-            document.getElementById(
-                "summary"
-            );
+        summary.value =
+            text.trim();
 
+        updateAllPreviews();
 
-        if (summary) {
-
-            summary.value =
-                data.summary || "";
-
-            updatePreview();
-
-            updateProgress();
-
-        }
-
+        debounceSave();
 
         showToast(
-            "Professional summary generated.",
-            "success"
+            "Professional summary generated."
         );
-
 
     } catch (error) {
 
-        console.error(error);
-
+        console.error(
+            "Generate summary error:",
+            error
+        );
 
         showToast(
-            getFriendlyAPIError(
-                error
-            ),
-            "error"
+            "AI backend is not connected yet. Your frontend is working correctly.",
+            "warning"
         );
 
     } finally {
 
         setButtonLoading(
             button,
-            false,
-            "Generate Summary with AI"
+            false
         );
-
     }
-
 }
 
 
 /* =========================================================
-   AI - SUGGEST SKILLS
+   SUGGEST SKILLS WITH AI
 ========================================================= */
 
 async function suggestSkills() {
@@ -3198,168 +4168,140 @@ async function suggestSkills() {
     const button =
         event?.currentTarget;
 
+    const skills =
+        getElement("skills");
 
-    const jobTitle =
-        getValue("jobTitle");
-
-
-    const existingSkills =
-        getValue("skills");
-
-
-    if (!jobTitle && !selectedCareerField) {
-
-        showToast(
-            "Please select a career field or enter a job title first.",
-            "error"
-        );
-
+    if (!skills) {
         return;
-
     }
 
 
-    const finalJobTitle =
-        jobTitle ||
-        selectedCareerRole ||
-        selectedCareerField;
+    const data =
+        collectCVData();
 
 
-    setButtonLoading(
-        button,
-        true,
-        "Generating..."
-    );
+    if (
+        !data.career.field &&
+        !data.career.jobTitle
+    ) {
+
+        showToast(
+            "Select a career field or enter a job title first.",
+            "warning"
+        );
+
+        return;
+    }
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/suggest-skills`,
+        setButtonLoading(
+            button,
+            true,
+            "Suggesting..."
+        );
+
+
+        const result =
+            await callAI(
+                "/suggest-skills",
                 {
-                    method: "POST",
+                    careerField:
+                        data.career.field,
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                    jobTitle:
+                        data.career.jobTitle,
 
-                    body: JSON.stringify({
-
-                        jobTitle:
-                            finalJobTitle,
-
-                        existingSkills
-
-                    })
-
+                    existingSkills:
+                        data.skills
                 }
             );
 
 
-        const data =
-            await response.json();
+        const text =
+            extractAIText(result);
 
 
-        if (!response.ok || !data.success) {
-
+        if (!text) {
             throw new Error(
-                data.message ||
-                "Failed to generate skills."
+                "AI returned no skills."
             );
-
         }
 
 
-        const newSkills =
-            Array.isArray(data.skills)
-                ? data.skills
-                : [];
-
-
-        const existing =
-            parseList(existingSkills);
-
-
-        const merged = [
-            ...existing
-        ];
-
-
-        newSkills.forEach(function (skill) {
-
-            const clean =
-                String(skill).trim();
-
-
-            if (
-                clean &&
-                !merged.some(
-                    existingSkill =>
-                        existingSkill.toLowerCase() ===
-                        clean.toLowerCase()
-                )
-            ) {
-
-                merged.push(clean);
-
-            }
-
-        });
-
-
-        const skillsInput =
-            document.getElementById(
-                "skills"
+        skills.value =
+            mergeSkills(
+                skills.value,
+                text
             );
 
 
-        if (skillsInput) {
+        updateAllPreviews();
 
-            skillsInput.value =
-                merged.join(", ");
-
-            updatePreview();
-
-            updateProgress();
-
-        }
-
+        debounceSave();
 
         showToast(
-            "AI skills suggestions added.",
-            "success"
+            "AI skills added."
         );
-
 
     } catch (error) {
 
-        console.error(error);
-
+        console.error(
+            "Suggest skills error:",
+            error
+        );
 
         showToast(
-            getFriendlyAPIError(
-                error
-            ),
-            "error"
+            "AI backend is not connected yet.",
+            "warning"
         );
 
     } finally {
 
         setButtonLoading(
             button,
-            false,
-            "Suggest Skills with AI"
+            false
+        );
+    }
+}
+
+
+function mergeSkills(
+    existing,
+    incoming
+) {
+
+    const current =
+        parseCommaSeparated(
+            existing
         );
 
-    }
+    const newSkills =
+        parseCommaSeparated(
+            incoming
+        );
 
+    const merged = [
+        ...current,
+        ...newSkills
+    ];
+
+    return merged
+        .filter(
+            (skill, index, array) =>
+                array.findIndex(
+                    item =>
+                        item.toLowerCase() ===
+                        skill.toLowerCase()
+                ) === index
+        )
+        .join(", ");
 }
 
 
 /* =========================================================
-   AI - IMPROVE EXPERIENCE
+   IMPROVE EXPERIENCE WITH AI
 ========================================================= */
 
 async function improveExperience(button) {
@@ -3369,140 +4311,111 @@ async function improveExperience(button) {
             ".experience-item"
         );
 
-
-    if (!item) return;
-
-
-    const jobTitle =
-        getElementValue(
-            item,
-            ".experience-job-title"
-        );
-
-
-    const company =
-        getElementValue(
-            item,
-            ".experience-company"
-        );
-
-
-    const description =
-        getElementValue(
-            item,
-            ".experience-description"
-        );
-
-
-    if (!description.trim()) {
-
-        showToast(
-            "Please write an experience description first.",
-            "error"
-        );
-
+    if (!item) {
         return;
-
     }
 
 
-    setButtonLoading(
-        button,
-        true,
-        "Improving..."
-    );
+    const description =
+        $(".experience-description", item);
+
+
+    if (!description) {
+        return;
+    }
+
+
+    if (
+        !normalizeText(
+            description.value
+        )
+    ) {
+
+        showToast(
+            "Write some experience details first.",
+            "warning"
+        );
+
+        description.focus();
+
+        return;
+    }
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/improve-experience`,
+        setButtonLoading(
+            button,
+            true,
+            "Improving..."
+        );
+
+
+        const result =
+            await callAI(
+                "/improve-experience",
                 {
-                    method: "POST",
+                    jobTitle:
+                        $(".experience-job-title", item)?.value || "",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                    company:
+                        $(".experience-company", item)?.value || "",
 
-                    body: JSON.stringify({
+                    description:
+                        description.value,
 
-                        jobTitle,
-
-                        company,
-
-                        description
-
-                    })
-
+                    careerField:
+                        getElement("careerField")?.value || ""
                 }
             );
 
 
-        const data =
-            await response.json();
+        const text =
+            extractAIText(result);
 
 
-        if (!response.ok || !data.success) {
-
+        if (!text) {
             throw new Error(
-                data.message ||
-                "Failed to improve experience."
+                "AI returned empty experience."
             );
-
         }
 
 
-        const descriptionInput =
-            item.querySelector(
-                ".experience-description"
-            );
+        description.value =
+            text.trim();
 
+        updateAllPreviews();
 
-        if (descriptionInput) {
-
-            descriptionInput.value =
-                data.experience || "";
-
-            updatePreview();
-
-        }
-
+        debounceSave();
 
         showToast(
-            "Experience improved with AI.",
-            "success"
+            "Experience improved with AI."
         );
-
 
     } catch (error) {
 
-        console.error(error);
-
+        console.error(
+            "Improve experience error:",
+            error
+        );
 
         showToast(
-            getFriendlyAPIError(
-                error
-            ),
-            "error"
+            "AI backend is not connected yet.",
+            "warning"
         );
 
     } finally {
 
         setButtonLoading(
             button,
-            false,
-            "Improve with AI"
+            false
         );
-
     }
-
 }
 
 
 /* =========================================================
-   AI - IMPROVE PROJECT
+   IMPROVE PROJECT WITH AI
 ========================================================= */
 
 async function improveProject(button) {
@@ -3512,1531 +4425,1169 @@ async function improveProject(button) {
             ".project-item"
         );
 
-
-    if (!item) return;
-
-
-    const projectName =
-        getElementValue(
-            item,
-            ".project-name"
-        );
-
-
-    const technologies =
-        getElementValue(
-            item,
-            ".project-technologies"
-        );
-
-
-    const description =
-        getElementValue(
-            item,
-            ".project-description"
-        );
-
-
-    if (!description.trim()) {
-
-        showToast(
-            "Please write a project description first.",
-            "error"
-        );
-
+    if (!item) {
         return;
-
     }
 
 
-    setButtonLoading(
-        button,
-        true,
-        "Improving..."
-    );
+    const description =
+        $(".project-description", item);
+
+
+    if (!description) {
+        return;
+    }
+
+
+    if (
+        !normalizeText(
+            description.value
+        )
+    ) {
+
+        showToast(
+            "Write your project description first.",
+            "warning"
+        );
+
+        description.focus();
+
+        return;
+    }
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/improve-project`,
+        setButtonLoading(
+            button,
+            true,
+            "Improving..."
+        );
+
+
+        const result =
+            await callAI(
+                "/improve-project",
                 {
-                    method: "POST",
+                    projectName:
+                        $(".project-name", item)?.value || "",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                    technologies:
+                        $(".project-technologies", item)?.value || "",
 
-                    body: JSON.stringify({
-
-                        projectName,
-
-                        technologies,
-
-                        description
-
-                    })
-
+                    description:
+                        description.value
                 }
             );
 
 
-        const data =
-            await response.json();
+        const text =
+            extractAIText(result);
 
 
-        if (!response.ok || !data.success) {
-
+        if (!text) {
             throw new Error(
-                data.message ||
-                "Failed to improve project."
+                "AI returned empty project description."
             );
-
         }
 
 
-        const descriptionInput =
-            item.querySelector(
-                ".project-description"
-            );
+        description.value =
+            text.trim();
 
+        updateAllPreviews();
 
-        if (descriptionInput) {
-
-            descriptionInput.value =
-                data.description || "";
-
-            updatePreview();
-
-        }
-
+        debounceSave();
 
         showToast(
-            "Project improved with AI.",
-            "success"
+            "Project description improved."
         );
-
 
     } catch (error) {
 
-        console.error(error);
-
+        console.error(
+            "Improve project error:",
+            error
+        );
 
         showToast(
-            getFriendlyAPIError(
-                error
-            ),
-            "error"
+            "AI backend is not connected yet.",
+            "warning"
         );
 
     } finally {
 
         setButtonLoading(
             button,
-            false,
-            "Improve with AI"
+            false
         );
-
     }
-
 }
 
 
 /* =========================================================
-   AI - ANALYZE CV
+   ANALYZE CV
 ========================================================= */
 
 async function analyzeCV() {
 
-    const modal =
-        document.getElementById(
-            "analysisModal"
-        );
+    const button =
+        event?.currentTarget;
 
-
-    const content =
-        document.getElementById(
+    const analysisContent =
+        getElement(
             "analysisContent"
         );
 
 
-    if (modal) {
-
-        modal.style.display =
-            "flex";
-
+    if (!analysisContent) {
+        return;
     }
 
 
-    if (content) {
+    const data =
+        collectCVData();
 
-        content.innerHTML = `
 
-            <div class="analysis-loading">
+    const localAnalysis =
+        createLocalCVAnalysis(
+            data
+        );
 
-                <i class="fa-solid fa-spinner fa-spin"></i>
 
-                <p>
-                    AI is analyzing your CV...
-                </p>
+    openAnalysis();
 
-            </div>
 
-        `;
-
-    }
+    analysisContent.innerHTML = `
+        <div class="analysis-loading">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Analyzing your CV...
+        </div>
+    `;
 
 
     try {
 
-        const response =
-            await fetch(
-                `${API_BASE_URL}/api/analyze-cv`,
+        if (button) {
+            setButtonLoading(
+                button,
+                true,
+                "Analyzing..."
+            );
+        }
+
+
+        const result =
+            await callAI(
+                "/analyze-cv",
                 {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        name:
-                            getValue("name"),
-
-                        jobTitle:
-                            getValue("jobTitle"),
-
-                        summary:
-                            getValue("summary"),
-
-                        skills:
-                            getValue("skills"),
-
-                        experience:
-                            collectExperienceText(),
-
-                        education:
-                            collectEducationText(),
-
-                        projects:
-                            collectProjectsText(),
-
-                        certifications:
-                            collectCertificationsText()
-
-                    })
-
+                    cv:
+                        data
                 }
             );
 
 
-        const data =
-            await response.json();
+        const text =
+            extractAIText(result);
 
 
-        if (!response.ok || !data.success) {
-
+        if (!text) {
             throw new Error(
-                data.message ||
-                "Failed to analyze CV."
+                "AI returned no analysis."
             );
-
         }
 
 
-        if (content) {
-
-            content.innerHTML =
-                formatAIText(
-                    data.analysis
-                );
-
-        }
-
+        analysisContent.innerHTML = `
+            <div class="ai-analysis-result">
+                ${formatAIResponse(text)}
+            </div>
+        `;
 
     } catch (error) {
 
-        console.error(error);
+        console.warn(
+            "AI analysis unavailable:",
+            error
+        );
 
 
-        if (content) {
+        /*
+            Frontend fallback.
 
-            content.innerHTML = `
+            This means the Analyze button still
+            works before your backend is connected.
+        */
 
-                <div class="analysis-error">
+        analysisContent.innerHTML =
+            localAnalysis;
+    } finally {
 
-                    <i class="fa-solid fa-circle-exclamation"></i>
+        if (button) {
 
-                    <p>
-                        ${escapeHTML(
-                            getFriendlyAPIError(
-                                error
-                            )
-                        )}
-                    </p>
-
-                </div>
-
-            `;
-
+            setButtonLoading(
+                button,
+                false
+            );
         }
-
     }
-
 }
 
 
 /* =========================================================
-   TEMPLATES
+   LOCAL CV ANALYSIS FALLBACK
 ========================================================= */
 
-function openTemplates() {
+function createLocalCVAnalysis(data) {
 
-    const modal =
-        document.getElementById(
-            "templateModal"
+    let score = 0;
+
+    const checks = [];
+
+
+    if (data.personal.name) {
+
+        score += 10;
+
+        checks.push(
+            createCheck(
+                true,
+                "Full name is provided."
+            )
         );
 
+    } else {
 
-    if (!modal) return;
-
-
-    modal.style.display =
-        "flex";
-
-}
-
-
-function closeTemplates() {
-
-    const modal =
-        document.getElementById(
-            "templateModal"
+        checks.push(
+            createCheck(
+                false,
+                "Add your full name."
+            )
         );
-
-
-    if (!modal) return;
-
-
-    modal.style.display =
-        "none";
-
-}
-
-
-function changeTemplate(templateNumber) {
-
-    const cv =
-        document.getElementById(
-            "cvPreview"
-        );
-
-
-    if (!cv) return;
-
-
-    currentTemplate =
-        Number(templateNumber) || 1;
-
-
-    cv.classList.remove(
-        "template-1",
-        "template-2",
-        "template-3",
-        "template-4"
-    );
-
-
-    cv.classList.add(
-        `template-${currentTemplate}`
-    );
-
-
-    closeTemplates();
-
-
-    showToast(
-        `Template ${currentTemplate} selected.`,
-        "success"
-    );
-
-}
-
-
-/* =========================================================
-   CLOSE ANALYSIS
-========================================================= */
-
-function closeAnalysis() {
-
-    const modal =
-        document.getElementById(
-            "analysisModal"
-        );
-
-
-    if (!modal) return;
-
-
-    modal.style.display =
-        "none";
-
-}
-
-
-/* =========================================================
-   CLEAR CV
-========================================================= */
-
-function clearCV() {
-
-    const confirmed =
-        confirm(
-            "Are you sure you want to clear your entire CV?"
-        );
-
-
-    if (!confirmed) return;
-
-
-    const fields =
-        document.querySelectorAll(
-            "input, textarea, select"
-        );
-
-
-    fields.forEach(function (field) {
-
-        if (
-            field.type === "file"
-        ) {
-
-            field.value = "";
-
-        } else if (
-            field.id !== "city"
-        ) {
-
-            field.value = "";
-
-        }
-
-    });
-
-
-    const city =
-        document.getElementById(
-            "city"
-        );
-
-
-    if (city) {
-
-        city.disabled = true;
-
-        city.innerHTML = `
-
-            <option value="">
-                Select country first
-            </option>
-
-        `;
-
     }
 
 
-    const photoPreview =
-        document.getElementById(
-            "photoPreview"
+    if (data.personal.email) {
+
+        score += 10;
+
+        checks.push(
+            createCheck(
+                true,
+                "Email address is provided."
+            )
         );
 
+    } else {
 
-    if (photoPreview) {
-
-        photoPreview.innerHTML = `
-
-            <i class="fa-solid fa-user"></i>
-
-        `;
-
+        checks.push(
+            createCheck(
+                false,
+                "Add a professional email address."
+            )
+        );
     }
 
 
-    const previewPhoto =
-        document.getElementById(
-            "previewPhoto"
+    if (data.personal.phone) {
+
+        score += 5;
+
+        checks.push(
+            createCheck(
+                true,
+                "Phone number is included."
+            )
         );
-
-
-    const defaultPhotoIcon =
-        document.getElementById(
-            "defaultPhotoIcon"
-        );
-
-
-    if (previewPhoto) {
-
-        previewPhoto.src = "";
-
-        previewPhoto.style.display =
-            "none";
-
     }
 
 
-    if (defaultPhotoIcon) {
+    if (data.career.jobTitle) {
 
-        defaultPhotoIcon.style.display =
-            "block";
+        score += 10;
 
+        checks.push(
+            createCheck(
+                true,
+                "Professional title is defined."
+            )
+        );
+
+    } else {
+
+        checks.push(
+            createCheck(
+                false,
+                "Add a professional job title."
+            )
+        );
     }
 
 
-    selectedCareerField = "";
+    if (
+        data.summary &&
+        data.summary.length >= 50
+    ) {
 
-    selectedCareerRole = "";
+        score += 15;
 
-
-    renderCareerRoles();
-
-    updateCareerGuidance();
-
-    updatePreview();
-
-    updateProgress();
-
-
-    showToast(
-        "Your CV has been cleared.",
-        "success"
-    );
-
-}
-
-
-/* =========================================================
-   DOWNLOAD CV
-========================================================= */
-
-function downloadCV() {
-
-    const cv =
-        document.getElementById(
-            "cvPreview"
+        checks.push(
+            createCheck(
+                true,
+                "Professional summary has useful detail."
+            )
         );
 
+    } else {
 
-    if (!cv) {
-
-        showToast(
-            "CV preview not found.",
-            "error"
+        checks.push(
+            createCheck(
+                false,
+                "Add a stronger professional summary."
+            )
         );
-
-        return;
-
     }
 
 
-    updatePreview();
-
-
-    window.print();
-
-}
-
-
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-function updateProgress() {
-
-    const fields = [
-
-        getValue("name"),
-
-        getValue("email"),
-
-        getValue("phone"),
-
-        getValue("jobTitle"),
-
-        getValue("summary"),
-
-        getValue("skills"),
-
-        getValue("country"),
-
-        getValue("city")
-
-    ];
-
-
-    let completed =
-        fields.filter(
-            value =>
-                String(value).trim() !== ""
+    const skillCount =
+        parseCommaSeparated(
+            data.skills
         ).length;
 
 
-    if (
-        document.querySelector(
-            ".experience-description"
-        )?.value.trim()
-    ) {
+    if (skillCount >= 5) {
 
-        completed++;
+        score += 15;
 
-    }
-
-
-    if (
-        document.querySelector(
-            ".education-degree"
-        )?.value.trim()
-    ) {
-
-        completed++;
-
-    }
-
-
-    if (
-        document.querySelector(
-            ".project-description"
-        )?.value.trim()
-    ) {
-
-        completed++;
-
-    }
-
-
-    const percentage =
-        Math.round(
-            (
-                completed /
-                11
-            ) * 100
-        );
-
-
-    document
-        .querySelectorAll(
-            "[data-progress]"
-        )
-        .forEach(
-            function (element) {
-
-                element.style.width =
-                    `${Math.min(
-                        percentage,
-                        100
-                    )}%`;
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   COLLECT EXPERIENCE
-========================================================= */
-
-function collectExperienceText() {
-
-    const items =
-        document.querySelectorAll(
-            ".experience-item"
-        );
-
-
-    const data = [];
-
-
-    items.forEach(function (item) {
-
-        const title =
-            getElementValue(
-                item,
-                ".experience-job-title"
-            );
-
-
-        const company =
-            getElementValue(
-                item,
-                ".experience-company"
-            );
-
-
-        const start =
-            getElementValue(
-                item,
-                ".experience-start"
-            );
-
-
-        const end =
-            getElementValue(
-                item,
-                ".experience-end"
-            );
-
-
-        const description =
-            getElementValue(
-                item,
-                ".experience-description"
-            );
-
-
-        if (
-            title ||
-            company ||
-            start ||
-            end ||
-            description
-        ) {
-
-            data.push(
-                [
-                    title,
-                    company,
-                    start,
-                    end,
-                    description
-                ]
-                .filter(Boolean)
-                .join(" | ")
-            );
-
-        }
-
-    });
-
-
-    return data.join("\n");
-
-}
-
-
-/* =========================================================
-   COLLECT EDUCATION
-========================================================= */
-
-function collectEducationText() {
-
-    const items =
-        document.querySelectorAll(
-            ".education-item"
-        );
-
-
-    const data = [];
-
-
-    items.forEach(function (item) {
-
-
-            getElementValue(
-                item,
-                ".education-degree"
-            );
-
-
-        const institution =
-            getElementValue(
-                item,
-                ".education-institution"
-            );
-
-
-        const start =
-            getElementValue(
-                item,
-                ".education-start"
-            );
-
-
-        const end =
-            getElementValue(
-                item,
-                ".education-end"
-            );
-
-
-        const details =
-            getElementValue(
-                item,
-                ".education-details"
-            );
-
-
-        if (
-            degree ||
-            institution ||
-            start ||
-            end ||
-            details
-        ) {
-
-            data.push(
-                [
-                    degree,
-                    institution,
-                    start,
-                    end,
-                    details
-                ]
-                .filter(Boolean)
-                .join(" | ")
-            );
-
-        }
-
-    });
-
-
-    return data.join("\n");
-
-}
-
-
-/* =========================================================
-   COLLECT PROJECTS
-========================================================= */
-
-function collectProjectsText() {
-
-    const items =
-        document.querySelectorAll(
-            ".project-item"
-        );
-
-
-    const data = [];
-
-
-    items.forEach(function (item) {
-
-        const name =
-            getElementValue(
-                item,
-                ".project-name"
-            );
-
-
-        const technologies =
-            getElementValue(
-                item,
-                ".project-technologies"
-            );
-
-
-        const description =
-            getElementValue(
-                item,
-                ".project-description"
-            );
-
-
-        if (
-            name ||
-            technologies ||
-            description
-        ) {
-
-            data.push(
-                [
-                    name,
-                    technologies,
-                    description
-                ]
-                .filter(Boolean)
-                .join(" | ")
-            );
-
-        }
-
-    });
-
-
-    return data.join("\n");
-
-}
-
-
-/* =========================================================
-   COLLECT CERTIFICATIONS
-========================================================= */
-
-function collectCertificationsText() {
-
-    const items =
-        document.querySelectorAll(
-            ".certification-item"
-        );
-
-
-    const data = [];
-
-
-    items.forEach(function (item) {
-
-        const name =
-            getElementValue(
-                item,
-                ".certification-name"
-            );
-
-
-        const issuer =
-            getElementValue(
-                item,
-                ".certification-issuer"
-            );
-
-
-        const year =
-            getElementValue(
-                item,
-                ".certification-year"
-            );
-
-
-        if (
-            name ||
-            issuer ||
-            year
-        ) {
-
-            data.push(
-                [
-                    name,
-                    issuer,
-                    year
-                ]
-                .filter(Boolean)
-                .join(" | ")
-            );
-
-        }
-
-    });
-
-
-    return data.join("\n");
-
-}
-
-
-/* =========================================================
-   GET VALUE
-========================================================= */
-
-function getValue(id) {
-
-    const element =
-        document.getElementById(id);
-
-
-    if (!element) return "";
-
-
-    return String(
-        element.value || ""
-    ).trim();
-
-}
-
-
-/* =========================================================
-   GET ELEMENT VALUE
-========================================================= */
-
-function getElementValue(
-    parent,
-    selector
-) {
-
-    if (!parent) return "";
-
-
-    const element =
-        parent.querySelector(
-            selector
-        );
-
-
-    if (!element) return "";
-
-
-    return String(
-        element.value || ""
-    ).trim();
-
-}
-
-
-/* =========================================================
-   SET TEXT
-========================================================= */
-
-function setText(id, value) {
-
-    const element =
-        document.getElementById(id);
-
-
-    if (!element) return;
-
-
-    element.textContent =
-        value;
-
-}
-
-
-/* =========================================================
-   SET HTML
-========================================================= */
-
-function setHTML(id, html) {
-
-    const element =
-        document.getElementById(id);
-
-
-    if (!element) return;
-
-
-    element.innerHTML =
-        html;
-
-}
-
-
-/* =========================================================
-   PARSE LIST
-========================================================= */
-
-function parseList(value) {
-
-    return String(value || "")
-
-        .split(
-            /[,;\n]+/
-        )
-
-        .map(
-            item =>
-                item.trim()
-        )
-
-        .filter(Boolean);
-
-}
-
-
-/* =========================================================
-   FORMAT MONTH
-========================================================= */
-
-function formatMonth(value) {
-
-    if (!value) return "";
-
-
-    const parts =
-        value.split("-");
-
-
-    if (parts.length !== 2) {
-
-        return value;
-
-    }
-
-
-    const year =
-        parts[0];
-
-
-    const month =
-        Number(parts[1]);
-
-
-    const monthNames = [
-
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec"
-
-    ];
-
-
-    return `${monthNames[month - 1]} ${year}`;
-
-}
-
-
-/* =========================================================
-   FORMAT BULLET TEXT
-========================================================= */
-
-function formatBulletText(text) {
-
-    const lines =
-        String(text || "")
-            .split("\n")
-            .map(
-                line =>
-                    line.trim()
+        checks.push(
+            createCheck(
+                true,
+                `${skillCount} skills detected.`
             )
-            .filter(Boolean);
+        );
 
+    } else {
 
-    if (!lines.length) return "";
+        score +=
+            skillCount * 2;
 
-
-    if (lines.length === 1) {
-
-        return `
-            <p>
-                ${escapeHTML(lines[0])}
-            </p>
-        `;
-
+        checks.push(
+            createCheck(
+                false,
+                "Add at least 5 relevant skills."
+            )
+        );
     }
+
+
+    if (
+        data.experience.some(
+            item =>
+                item.jobTitle ||
+                item.company ||
+                item.description
+        )
+    ) {
+
+        score += 15;
+
+        checks.push(
+            createCheck(
+                true,
+                "Work experience section contains information."
+            )
+        );
+
+    } else {
+
+        checks.push(
+            createCheck(
+                false,
+                "Add relevant work experience if applicable."
+            )
+        );
+    }
+
+
+    if (
+        data.education.some(
+            item =>
+                item.degree ||
+                item.institution
+        )
+    ) {
+
+        score += 10;
+
+        checks.push(
+            createCheck(
+                true,
+                "Education section is present."
+            )
+        );
+
+    } else {
+
+        checks.push(
+            createCheck(
+                false,
+                "Add your education details."
+            )
+        );
+    }
+
+
+    if (
+        data.projects.some(
+            item =>
+                item.name ||
+                item.description
+        )
+    ) {
+
+        score += 5;
+
+        checks.push(
+            createCheck(
+                true,
+                "Project information is included."
+            )
+        );
+    }
+
+
+    score =
+        Math.min(
+            100,
+            Math.round(score)
+        );
 
 
     return `
+        <div class="local-analysis">
 
-        <ul>
+            <div class="analysis-score">
+                <strong>${score}%</strong>
+                <span>Frontend CV Readiness</span>
+            </div>
 
-            ${lines.map(
-                line => `
+            <div class="analysis-checks">
+                ${checks.join("")}
+            </div>
 
-                    <li>
-                        ${escapeHTML(
-                            line
-                                .replace(
-                                    /^[-•*]\s*/,
-                                    ""
-                                )
-                        )}
-                    </li>
+            <div class="analysis-note">
+                <i class="fa-solid fa-circle-info"></i>
+                This is a frontend fallback analysis.
+                Once your backend is connected, the AI analysis
+                endpoint will provide deeper recommendations.
+            </div>
 
-                `
-            ).join("")}
-
-        </ul>
-
+        </div>
     `;
+}
 
+
+function createCheck(
+    passed,
+    text
+) {
+
+    return `
+        <div class="analysis-check">
+
+            <i class="fa-solid ${
+                passed
+                    ? "fa-circle-check"
+                    : "fa-circle-exclamation"
+            }"></i>
+
+            <span>
+                ${escapeHTML(text)}
+            </span>
+
+        </div>
+    `;
 }
 
 
 /* =========================================================
-   FORMAT AI TEXT
+   AI RESPONSE FORMATTER
 ========================================================= */
 
-function formatAIText(text) {
-
-    if (!text) {
-
-        return `
-            <p>
-                No analysis was returned.
-            </p>
-        `;
-
-    }
-
+function formatAIResponse(text) {
 
     const escaped =
         escapeHTML(text);
 
-
-    const lines =
-        escaped
-            .split("\n");
-
-
-    let html = "";
-
-
-    lines.forEach(function (line) {
-
-        const trimmed =
-            line.trim();
-
-
-        if (!trimmed) {
-
-            html += "<br>";
-
-            return;
-
-        }
-
-
-        if (
-            /^#{1,6}\s/.test(
-                trimmed
-            )
-        ) {
-
-            html += `
-
-                <h3>
-                    ${trimmed.replace(
-                        /^#{1,6}\s/,
-                        ""
-                    )}
-                </h3>
-
-            `;
-
-            return;
-
-        }
-
-
-        if (
-            /^\d+\.\s/.test(
-                trimmed
-            )
-        ) {
-
-            html += `
-
-                <p class="analysis-point">
-
-                    ${trimmed}
-
-                </p>
-
-            `;
-
-            return;
-
-        }
-
-
-        if (
-            /^[-•*]\s/.test(
-                trimmed
-            )
-        ) {
-
-            html += `
-
-                <p class="analysis-bullet">
-
-                    ${trimmed}
-
-                </p>
-
-            `;
-
-            return;
-
-        }
-
-
-        html += `
-
-            <p>
-                ${trimmed}
-            </p>
-
-        `;
-
-    });
-
-
-    return html;
-
-}
-
-
-/* =========================================================
-   BUTTON LOADING
-========================================================= */
-
-function setButtonLoading(
-    button,
-    loading,
-    text
-) {
-
-    if (!button) return;
-
-
-    if (loading) {
-
-        button.disabled = true;
-
-
-        button.dataset.originalHTML =
-            button.innerHTML;
-
-
-        button.innerHTML = `
-
-            <i class="fa-solid fa-spinner fa-spin"></i>
-
-            ${escapeHTML(text)}
-
-        `;
-
-    } else {
-
-        button.disabled = false;
-
-
-        if (
-            button.dataset.originalHTML
-        ) {
-
-            button.innerHTML =
-                button.dataset.originalHTML;
-
-        } else {
-
-            button.innerHTML = `
-
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-
-                ${escapeHTML(text)}
-
-            `;
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   FRIENDLY API ERROR
-========================================================= */
-
-function getFriendlyAPIError(error) {
-
-    const message =
-        error?.message ||
-        "";
-
-
-    if (
-        message.includes(
-            "Failed to fetch"
+    return escaped
+        .replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
         )
-    ) {
-
-        return (
-            "Backend server is not running. " +
-            "Please start the backend with npm.cmd start."
+        .replace(
+            /\n{2,}/g,
+            "</p><p>"
+        )
+        .replace(
+            /\n/g,
+            "<br>"
         );
-
-    }
-
-
-    return message ||
-        "Something went wrong. Please try again.";
-
 }
 
 
 /* =========================================================
-   TOAST
+   PDF / DOWNLOAD
 ========================================================= */
 
-function showToast(
-    message,
-    type = "success"
-) {
+async function downloadCV() {
 
-    const toast =
-        document.getElementById(
-            "toast"
-        );
+    const button =
+        event?.currentTarget;
 
 
-    const toastMessage =
-        document.getElementById(
-            "toastMessage"
-        );
+    const preview =
+        getElement("cvPreview");
 
 
-    const toastIcon =
-        document.getElementById(
-            "toastIcon"
-        );
+    if (!preview) {
 
-
-    if (!toast) return;
-
-
-    if (toastMessage) {
-
-        toastMessage.textContent =
-            message;
-
-    }
-
-
-    if (toastIcon) {
-
-        toastIcon.className =
-            type === "error"
-                ? "fa-solid fa-circle-exclamation"
-                : "fa-solid fa-circle-check";
-
-    }
-
-
-    toast.classList.remove(
-        "show",
-        "error"
-    );
-
-
-    if (type === "error") {
-
-        toast.classList.add(
+        showToast(
+            "CV preview is not available.",
             "error"
         );
 
+        return;
     }
 
 
-    requestAnimationFrame(
-        function () {
-
-            toast.classList.add(
-                "show"
-            );
-
-        }
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
-            function () {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            3500
+    const name =
+        normalizeText(
+            getElement("name")?.value
         );
 
+
+    try {
+
+        if (button) {
+
+            setButtonLoading(
+                button,
+                true,
+                "Preparing..."
+            );
+        }
+
+
+        /*
+            Try html2pdf first.
+            If it is not loaded, dynamically load it.
+        */
+
+        await ensureHtml2Pdf();
+
+
+        if (
+            typeof window.html2pdf ===
+            "function"
+        ) {
+
+            const options = {
+
+                margin: 0,
+
+                filename:
+                    name
+                        ? `${sanitizeFileName(name)}-CV.pdf`
+                        : APP_CONFIG.pdfFileName,
+
+                image: {
+                    type: "jpeg",
+                    quality: 0.98
+                },
+
+                html2canvas: {
+
+                    scale: 2,
+
+                    useCORS: true,
+
+                    backgroundColor:
+                        "#ffffff",
+
+                    logging: false
+                },
+
+                jsPDF: {
+
+                    unit: "mm",
+
+                    format: "a4",
+
+                    orientation:
+                        "portrait"
+                },
+
+                pagebreak: {
+
+                    mode: [
+                        "css",
+                        "legacy"
+                    ]
+                }
+            };
+
+
+            await window
+                .html2pdf()
+                .set(options)
+                .from(preview)
+                .save();
+
+
+            showToast(
+                "Your CV PDF has been downloaded."
+            );
+
+        } else {
+
+            printCV();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "PDF generation error:",
+            error
+        );
+
+
+        showToast(
+            "PDF generation failed. Opening print mode instead.",
+            "warning"
+        );
+
+
+        setTimeout(
+            printCV,
+            500
+        );
+
+    } finally {
+
+        if (button) {
+
+            setButtonLoading(
+                button,
+                false
+            );
+        }
+    }
 }
 
 
 /* =========================================================
-   CLOSE MODALS ON OUTSIDE CLICK
+   HTML2PDF LOADER
+========================================================= */
+
+let html2pdfPromise = null;
+
+
+function ensureHtml2Pdf() {
+
+    if (
+        typeof window.html2pdf ===
+        "function"
+    ) {
+
+        return Promise.resolve();
+    }
+
+
+    if (html2pdfPromise) {
+
+        return html2pdfPromise;
+    }
+
+
+    html2pdfPromise =
+        new Promise(
+            (resolve, reject) => {
+
+                const existing =
+                    document.querySelector(
+                        'script[data-html2pdf="true"]'
+                    );
+
+
+                if (existing) {
+
+                    existing.addEventListener(
+                        "load",
+                        () => resolve()
+                    );
+
+                    existing.addEventListener(
+                        "error",
+                        () => reject(
+                            new Error(
+                                "html2pdf failed to load."
+                            )
+                        )
+                    );
+
+                    return;
+                }
+
+
+                const script =
+                    document.createElement(
+                        "script"
+                    );
+
+
+                script.src =
+                    "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+
+
+                script.async = true;
+
+                script.dataset.html2pdf =
+                    "true";
+
+
+                script.onload =
+                    () => resolve();
+
+
+                script.onerror =
+                    () => reject(
+                        new Error(
+                            "Unable to load PDF library."
+                        )
+                    );
+
+
+                document.head.appendChild(
+                    script
+                );
+            }
+        );
+
+
+    return html2pdfPromise;
+}
+
+
+/* =========================================================
+   PRINT FALLBACK
+========================================================= */
+
+function printCV() {
+
+    const preview =
+        getElement("cvPreview");
+
+    if (!preview) {
+        return;
+    }
+
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank",
+            "width=900,height=1200"
+        );
+
+
+    if (!printWindow) {
+
+        showToast(
+            "Please allow popups to print your CV.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const styles =
+        Array.from(
+            document.querySelectorAll(
+                "link[rel='stylesheet'], style"
+            )
+        )
+        .map(element => {
+
+            if (
+                element.tagName ===
+                "LINK"
+            ) {
+
+                return `
+                    <link
+                        rel="stylesheet"
+                        href="${element.href}"
+                    >
+                `;
+            }
+
+            return element.outerHTML;
+
+        })
+        .join("\n");
+
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+            <title>
+                Professional CV
+            </title>
+
+            ${styles}
+
+            <style>
+
+                body {
+                    margin: 0;
+                    background: white;
+                }
+
+                .cv-preview {
+                    width: 210mm !important;
+                    min-height: 297mm !important;
+                    margin: 0 auto !important;
+                    box-shadow: none !important;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            ${preview.outerHTML}
+
+        </body>
+
+        </html>
+    `);
+
+
+    printWindow.document.close();
+
+
+    printWindow.onload =
+        () => {
+
+            setTimeout(
+                () => {
+
+                    printWindow.focus();
+
+                    printWindow.print();
+
+                },
+                500
+            );
+        };
+}
+
+
+/* =========================================================
+   FILE NAME SANITIZER
+========================================================= */
+
+function sanitizeFileName(value) {
+
+    return String(value)
+        .replace(
+            /[<>:"/\\|?*\x00-\x1F]/g,
+            ""
+        )
+        .replace(
+            /\s+/g,
+            "-"
+        )
+        .slice(
+            0,
+            80
+        ) || "Professional";
+}
+
+
+/* =========================================================
+   GLOBAL CLICK PROTECTION
 ========================================================= */
 
 document.addEventListener(
     "click",
-    function (event) {
+    event => {
 
-        const templateModal =
-            document.getElementById(
-                "templateModal"
-            );
+        const target =
+            event.target;
 
-
-        const analysisModal =
-            document.getElementById(
-                "analysisModal"
-            );
-
-
-        if (
-            templateModal &&
-            event.target ===
-                templateModal
-        ) {
-
-            closeTemplates();
-
+        if (!target) {
+            return;
         }
 
 
+        /*
+            Prevent accidental submission
+            behavior if any future button
+            is added without type.
+        */
+
+        const button =
+            target.closest("button");
+
+
         if (
-            analysisModal &&
-            event.target ===
-                analysisModal
+            button &&
+            button.type !== "button" &&
+            button.type !== "submit" &&
+            button.type !== "reset"
         ) {
 
-            closeAnalysis();
-
+            button.type =
+                "button";
         }
-
     }
 );
 
 
 /* =========================================================
-   ESC KEY
+   EXPERIENCE / EDUCATION DATE VALIDATION
+========================================================= */
+
+document.addEventListener(
+    "change",
+    event => {
+
+        const target =
+            event.target;
+
+
+        if (
+            target?.classList.contains(
+                "experience-end"
+            )
+        ) {
+
+            const item =
+                target.closest(
+                    ".experience-item"
+                );
+
+            const start =
+                $(".experience-start", item);
+
+            if (
+                start &&
+                target.value &&
+                start.value &&
+                target.value < start.value
+            ) {
+
+                showToast(
+                    "Experience end date cannot be before start date.",
+                    "warning"
+                );
+
+                target.value = "";
+            }
+        }
+
+
+        if (
+            target?.classList.contains(
+                "education-end"
+            )
+        ) {
+
+            const item =
+                target.closest(
+                    ".education-item"
+                );
+
+            const start =
+                $(".education-start", item);
+
+            if (
+                start &&
+                target.value &&
+                start.value &&
+                Number(target.value) <
+                Number(start.value)
+            ) {
+
+                showToast(
+                    "Education end year cannot be before start year.",
+                    "warning"
+                );
+
+                target.value = "";
+            }
+        }
+    }
+);
+
+
+/* =========================================================
+   PREVENT ENTER FROM ACCIDENTALLY
+   SUBMITTING FUTURE FORMS
 ========================================================= */
 
 document.addEventListener(
     "keydown",
-    function (event) {
+    event => {
 
         if (
-            event.key === "Escape"
+            event.key !== "Enter"
         ) {
-
-            closeTemplates();
-
-            closeAnalysis();
-
+            return;
         }
 
+
+        const target =
+            event.target;
+
+
+        if (
+            target &&
+            target.tagName ===
+            "INPUT" &&
+            target.type !== "textarea"
+        ) {
+
+            /*
+                Don't block normal text inputs.
+                Only prevent if a form is ever
+                introduced around this builder.
+            */
+
+            const form =
+                target.closest("form");
+
+            if (form) {
+                event.preventDefault();
+            }
+        }
     }
 );
 
 
 /* =========================================================
-   AUTO UPDATE PREVIEW
+   UNSAVED DATA SAFETY
 ========================================================= */
 
-setInterval(
-    function () {
+window.addEventListener(
+    "beforeunload",
+    () => {
 
-        updatePreview();
-
-    },
-    1000
+        try {
+            saveCVData();
+        } catch {
+            /* Ignore storage errors */
+        }
+    }
 );
+
+
+/* =========================================================
+   DEBUG API
+========================================================= */
+
+window.AICVBuilder = {
+
+    getData:
+        collectCVData,
+
+    save:
+        saveCVData,
+
+    clear:
+        clearCV,
+
+    updatePreview:
+        updateAllPreviews,
+
+    changeTemplate:
+        changeTemplate,
+
+    openTemplates:
+        openTemplates,
+
+    closeTemplates:
+        closeTemplates,
+
+    analyze:
+        analyzeCV
+};
+
+
+/* =========================================================
+   INITIAL GLOBAL FUNCTIONS
+   Required by inline HTML onclick=""
+========================================================= */
+
+window.openTemplates =
+    openTemplates;
+
+window.closeTemplates =
+    closeTemplates;
+
+window.changeTemplate =
+    changeTemplate;
+
+window.downloadCV =
+    downloadCV;
+
+window.clearCV =
+    clearCV;
+
+window.analyzeCV =
+    analyzeCV;
+
+window.addExperience =
+    addExperience;
+
+window.addEducation =
+    addEducation;
+
+window.addProject =
+    addProject;
+
+window.addCertification =
+    addCertification;
+
+window.addLanguage =
+    addLanguage;
+
+window.suggestSkills =
+    suggestSkills;
+
+window.generateSummary =
+    generateSummary;
+
+window.improveExperience =
+    improveExperience;
+
+window.improveProject =
+    improveProject;
+
+window.suggestCareerRole =
+    suggestCareerRole;
+
+window.closeAnalysis =
+    closeAnalysis;
+
+
+/* =========================================================
+   END OF AI CV BUILDER SCRIPT
+========================================================= */
