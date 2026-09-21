@@ -4477,10 +4477,10 @@ async function improveProject(button) {
 );
 
 const text =
-    typeof result?.project === "string"
-        ? result.project
+    typeof result?.description === "string"
+        ? result.description
         : extractAIText(result) || "";
-
+        
 if (!text) {
     throw new Error(
         "AI returned empty project description."
