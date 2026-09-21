@@ -4261,6 +4261,37 @@ async function suggestSkills() {
     }
 }
 
+
+// ======================================================
+// MERGE AI SUGGESTED SKILLS
+// ======================================================
+
+function mergeSkills(existing, incoming) {
+    const current =
+        parseCommaSeparated(existing);
+
+    const newSkills =
+        parseCommaSeparated(incoming);
+
+    const merged = [
+        ...current,
+        ...newSkills
+    ];
+
+    return merged
+        .filter(
+            (skill, index, array) =>
+                array.findIndex(
+                    item =>
+                        item.toLowerCase() ===
+                        skill.toLowerCase()
+                ) === index
+        )
+        .join(", ");
+}
+
+
+
 // ======================================================
 // AI IMPROVE EXPERIENCE
 // ======================================================
