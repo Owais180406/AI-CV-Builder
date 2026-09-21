@@ -4159,12 +4159,11 @@ async function generateSummary() {
 }
 
 
-/* =========================================================
-   SUGGEST SKILLS WITH AI
-========================================================= */
+// ======================================================
+// AI SUGGEST SKILLS
+// ======================================================
 
 async function suggestSkills() {
-
     const button =
         event?.currentTarget;
 
@@ -4175,53 +4174,51 @@ async function suggestSkills() {
         return;
     }
 
-
     const data =
         collectCVData();
-
 
     if (
         !data.career.field &&
         !data.career.jobTitle
     ) {
-
         showToast(
             "Select a career field or enter a job title first.",
             "warning"
         );
-
         return;
     }
 
-
     try {
-
         setButtonLoading(
             button,
             true,
             "Suggesting..."
         );
 
-
         const result =
             await callAI(
                 "/suggest-skills",
                 {
-                    careerField:
+                    // Backend expects "title"
+                    title:
+                        data.career.jobTitle ||
                         data.career.field,
 
-                    jobTitle:
-                        data.career.jobTitle,
-
                     existingSkills:
-                        data.skills
+                        data.skills,
+
+                    experience:
+                        data.experience,
+
+                    education:
+                        data.education
                 }
             );
 
-
         const text =
-            extractAIText(result);
-
+            extractAIText(result) ||
+            result?.skills ||
+            "";
 
         if (!text) {
             throw new Error(
@@ -4229,16 +4226,13 @@ async function suggestSkills() {
             );
         }
 
-
         skills.value =
             mergeSkills(
                 skills.value,
                 text
             );
 
-
         updateAllPreviews();
-
         debounceSave();
 
         showToast(
@@ -4253,7 +4247,8 @@ async function suggestSkills() {
         );
 
         showToast(
-            "AI backend is not connected yet.",
+            error?.message ||
+            "Failed to suggest skills with AI.",
             "warning"
         );
 
@@ -4266,46 +4261,11 @@ async function suggestSkills() {
     }
 }
 
-
-function mergeSkills(
-    existing,
-    incoming
-) {
-
-    const current =
-        parseCommaSeparated(
-            existing
-        );
-
-    const newSkills =
-        parseCommaSeparated(
-            incoming
-        );
-
-    const merged = [
-        ...current,
-        ...newSkills
-    ];
-
-    return merged
-        .filter(
-            (skill, index, array) =>
-                array.findIndex(
-                    item =>
-                        item.toLowerCase() ===
-                        skill.toLowerCase()
-                ) === index
-        )
-        .join(", ");
-}
-
-
-/* =========================================================
-   IMPROVE EXPERIENCE WITH AI
-========================================================= */
+// ======================================================
+// AI IMPROVE EXPERIENCE
+// ======================================================
 
 async function improveExperience(button) {
-
     const item =
         button?.closest(
             ".experience-item"
@@ -4315,41 +4275,33 @@ async function improveExperience(button) {
         return;
     }
 
-
     const description =
         $(".experience-description", item);
-
 
     if (!description) {
         return;
     }
-
 
     if (
         !normalizeText(
             description.value
         )
     ) {
-
         showToast(
             "Write some experience details first.",
             "warning"
         );
 
         description.focus();
-
         return;
     }
 
-
     try {
-
         setButtonLoading(
             button,
             true,
             "Improving..."
         );
-
 
         const result =
             await callAI(
@@ -4361,7 +4313,8 @@ async function improveExperience(button) {
                     company:
                         $(".experience-company", item)?.value || "",
 
-                    description:
+                    // Backend expects "experience"
+                    experience:
                         description.value,
 
                     careerField:
@@ -4369,10 +4322,10 @@ async function improveExperience(button) {
                 }
             );
 
-
         const text =
-            extractAIText(result);
-
+            extractAIText(result) ||
+            result?.experience ||
+            "";
 
         if (!text) {
             throw new Error(
@@ -4380,12 +4333,10 @@ async function improveExperience(button) {
             );
         }
 
-
         description.value =
             text.trim();
 
         updateAllPreviews();
-
         debounceSave();
 
         showToast(
@@ -4400,7 +4351,8 @@ async function improveExperience(button) {
         );
 
         showToast(
-            "AI backend is not connected yet.",
+            error?.message ||
+            "Failed to improve experience with AI.",
             "warning"
         );
 
@@ -4413,13 +4365,11 @@ async function improveExperience(button) {
     }
 }
 
-
-/* =========================================================
-   IMPROVE PROJECT WITH AI
-========================================================= */
+// ======================================================
+// AI IMPROVE PROJECT
+// ======================================================
 
 async function improveProject(button) {
-
     const item =
         button?.closest(
             ".project-item"
@@ -4429,41 +4379,33 @@ async function improveProject(button) {
         return;
     }
 
-
     const description =
         $(".project-description", item);
-
 
     if (!description) {
         return;
     }
-
 
     if (
         !normalizeText(
             description.value
         )
     ) {
-
         showToast(
             "Write your project description first.",
             "warning"
         );
 
         description.focus();
-
         return;
     }
 
-
     try {
-
         setButtonLoading(
             button,
             true,
             "Improving..."
         );
-
 
         const result =
             await callAI(
@@ -4472,18 +4414,19 @@ async function improveProject(button) {
                     projectName:
                         $(".project-name", item)?.value || "",
 
-                    technologies:
-                        $(".project-technologies", item)?.value || "",
+                    // Backend expects "projectDescription"
+                    projectDescription:
+                        description.value,
 
-                    description:
-                        description.value
+                    technologies:
+                        $(".project-technologies", item)?.value || ""
                 }
             );
 
-
         const text =
-            extractAIText(result);
-
+            extractAIText(result) ||
+            result?.project ||
+            "";
 
         if (!text) {
             throw new Error(
@@ -4491,12 +4434,10 @@ async function improveProject(button) {
             );
         }
 
-
         description.value =
             text.trim();
 
         updateAllPreviews();
-
         debounceSave();
 
         showToast(
@@ -4511,7 +4452,8 @@ async function improveProject(button) {
         );
 
         showToast(
-            "AI backend is not connected yet.",
+            error?.message ||
+            "Failed to improve project with AI.",
             "warning"
         );
 
@@ -4524,13 +4466,11 @@ async function improveProject(button) {
     }
 }
 
-
-/* =========================================================
-   ANALYZE CV
-========================================================= */
+// ======================================================
+// AI ANALYZE CV
+// ======================================================
 
 async function analyzeCV() {
-
     const button =
         event?.currentTarget;
 
@@ -4539,24 +4479,19 @@ async function analyzeCV() {
             "analysisContent"
         );
 
-
     if (!analysisContent) {
         return;
     }
 
-
     const data =
         collectCVData();
-
 
     const localAnalysis =
         createLocalCVAnalysis(
             data
         );
 
-
     openAnalysis();
-
 
     analysisContent.innerHTML = `
         <div class="analysis-loading">
@@ -4564,7 +4499,6 @@ async function analyzeCV() {
             Analyzing your CV...
         </div>
     `;
-
 
     try {
 
@@ -4576,27 +4510,30 @@ async function analyzeCV() {
             );
         }
 
-
         const result =
             await callAI(
                 "/analyze-cv",
                 {
-                    cv:
-                        data
+                    // Backend expects "cvText"
+                    cvText:
+                        JSON.stringify(
+                            data,
+                            null,
+                            2
+                        )
                 }
             );
 
-
         const text =
-            extractAIText(result);
-
+            extractAIText(result) ||
+            result?.analysis ||
+            "";
 
         if (!text) {
             throw new Error(
                 "AI returned no analysis."
             );
         }
-
 
         analysisContent.innerHTML = `
             <div class="ai-analysis-result">
@@ -4611,20 +4548,17 @@ async function analyzeCV() {
             error
         );
 
-
         /*
             Frontend fallback.
-
-            This means the Analyze button still
-            works before your backend is connected.
+            If AI is unavailable,
+            local CV analysis will still appear.
         */
-
         analysisContent.innerHTML =
             localAnalysis;
+
     } finally {
 
         if (button) {
-
             setButtonLoading(
                 button,
                 false
@@ -4632,7 +4566,6 @@ async function analyzeCV() {
         }
     }
 }
-
 
 /* =========================================================
    LOCAL CV ANALYSIS FALLBACK
